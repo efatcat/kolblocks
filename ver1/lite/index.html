@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolblocks - Платформер</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #111; font-family: Arial, sans-serif; }
+        canvas { display: block; background: #0a0a0a; }
+        #loading, #levelComplete, #gameOver { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; display: flex; align-items: center; justify-content: center; 
+            color: #fff; z-index: 100; 
+        }
+        #levelComplete { background: rgba(0,0,0,0.8); display: none; flex-direction: column; z-index: 50; }
+        #levelComplete h2 { font-size: 48px; margin-bottom: 20px; color: #4af626; }
+        #levelComplete p { font-size: 24px; color: #aaa; }
+        #gameOver { background: rgba(0,0,0,0.9); display: none; flex-direction: column; z-index: 200; }
+        #gameOver h2 { font-size: 48px; margin-bottom: 20px; color: #ff2e63; }
+        #gameOver p { font-size: 24px; margin-bottom: 30px; color: #aaa; }
+        #ui { 
+            position: fixed; top: 20px; left: 20px; color: #fff; font-size: 18px; 
+            background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px; z-index: 10; 
+            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); min-width: 200px; 
+        }
+        #title { 
+            position: fixed; top: 20px; right: 20px; color: #4af626; font-size: 28px; font-weight: bold; 
+            font-family: Impact, sans-serif; text-shadow: 0 0 10px #4af626, 0 0 20px #4af626; 
+            background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px; z-index: 10; 
+        }
+        #healthBar { width: 100%; height: 20px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+        #healthFill { height: 100%; background: linear-gradient(90deg,#ff2e63,#4af626); width: 100%; transition: width 0.3s; }
+        button { background: #4af626; color: black; border: none; padding: 15px 30px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        button:hover { background: #7aff5c; transform: scale(1.05); }
+        .stat { margin-bottom: 5px; }
+        .stat-value { color: #4af626; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="loading">Загрузка Kolblocks...</div>
+    <div id="title">KOLBLOCKS</div>
+    <div id="ui">
+        <div class="stat">Уровень: <span class="stat-value" id="levelDisplay">1</span></div>
+        <div class="stat">Очки: <span class="stat-value" id="scoreDisplay">0</span></div>
+        <div class="stat">Здоровье:</div>
+        <div id="healthBar"><div id="healthFill"></div></div>
+    </div>
+    <div id="levelComplete">
+        <h2>УРОВЕНЬ ПРОЙДЕН</h2>
+        <p>Следующий уровень загружается...</p>
+    </div>
+    <div id="gameOver">
+        <h2>ИГРА ОКОНЧЕНА</h2>
+        <p>Ваш счёт: <span id="finalScore">0</span></p>
+        <p>Пройдено уровней: <span id="finalLevel">1</span></p>
+        <button onclick="restartGame()">ИГРАТЬ СНОВА</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // Основные элементы DOM
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const loading = document.getElementById('loading');
+        const levelComplete = document.getElementById('levelComplete');
+        const gameOverScreen = document.getElementById('gameOver');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const healthFill = document.getElementById('healthFill');
+        const finalScore = document.getElementById('finalScore');
+        const finalLevel = document.getElementById('finalLevel');
+        const title = document.getElementById('title');
+        
+        // Игровые переменные
+        let currentLevel = 1;
+        let score = 0;
+        let playerHealth = 100;
+        let maxHealth = 100;
+        let platforms = [];
+        let enemies = [];
+        let flyingEnemies = [];
+        let bullets = [];
+        let player;
+        let cameraX = 0;
+        let keys = {};
+        let gameRunning = true;
+        let levelWidth = 0;
+        let particles = [];
+        let powerUps = [];
+        let coins = [];
+        
+        // Размеры холста
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        // Класс игрока
+        class Player {
+            constructor() {
+                this.width = 40;
+                this.height = 40;
+                this.x = 100;
+                this.y = 200;
+                this.velX = 0;
+                this.velY = 0;
+                this.jumping = false;
+                this.color = '#4af626';
+                this.speed = 6;
+                this.jumpPower = 16;
+                this.gravity = 0.8;
+                this.friction = 0.85;
+                this.invulnerable = 0;
+                this.shootCooldown = 0;
+            }
+            
+            update() {
+                if (this.invulnerable > 0) this.invulnerable--;
+                
+                this.velY += this.gravity;
+                
+                if (keys['ArrowLeft'] || keys['a']) this.velX = -this.speed;
+                else if (keys['ArrowRight'] || keys['d']) this.velX = this.speed;
+                else this.velX *= this.friction;
+                
+                if ((keys[' '] || keys['ArrowUp'] || keys['w']) && !this.jumping) {
+                    this.velY = -this.jumpPower;
+                    this.jumping = true;
+                }
+                
+                if ((keys['f'] || keys['F']) && this.shootCooldown <= 0) {
+                    this.shoot();
+                    this.shootCooldown = 15;
+                }
+                
+                this.shootCooldown--;
+                this.x += this.velX;
+                this.y += this.velY;
+                
+                if (this.x < cameraX + 50) this.x = cameraX + 50;
+                if (this.x > cameraX + canvas.width - 50 - this.width) this.x = cameraX + canvas.width - 50 - this.width;
+                
+                if (this.y > canvas.height + 200) {
+                    takeDamage(30);
+                    this.respawn();
+                    return;
+                }
+                
+                this.checkPlatformCollisions();
+                this.checkEnemyCollisions();
+                this.checkBulletCollisions();
+                updateCamera();
+            }
+            
+            shoot() {
+                bullets.push({
+                    x: this.x + this.width,
+                    y: this.y + this.height/2,
+                    vx: 12,
+                    vy: 0,
+                    size: 8,
+                    color: '#4af626',
+                    playerBullet: true
+                });
+            }
+            
+            checkPlatformCollisions() {
+                for (let platform of platforms) {
+                    if (this.x < platform.x + platform.width &&
+                        this.x + this.width > platform.x &&
+                        this.y + this.height > platform.y &&
+                        this.y + this.height < platform.y + 25 &&
+                        this.velY > 0) {
+                        this.y = platform.y - this.height;
+                        this.velY = 0;
+                        this.jumping = false;
+                    }
+                }
+            }
+            
+            checkEnemyCollisions() {
+                if (this.invulnerable > 0) return;
+                
+                for (let enemy of enemies) {
+                    if (this.x < enemy.x + enemy.width &&
+                        this.x + this.width > enemy.x &&
+                        this.y < enemy.y + enemy.height &&
+                        this.y + this.height > enemy.y) {
+                        takeDamage(20);
+                        this.knockback(enemy.x < this.x ? 10 : -10, -8);
+                    }
+                }
+            }
+            
+            checkBulletCollisions() {
+                if (this.invulnerable > 0) return;
+                
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const bullet = bullets[i];
+                    if (!bullet.playerBullet && 
+                        this.x < bullet.x + bullet.size &&
+                        this.x + this.width > bullet.x &&
+                        this.y < bullet.y + bullet.size &&
+                        this.y + this.height > bullet.y) {
+                        takeDamage(15);
+                        this.knockback(bullet.x < this.x ? 8 : -8, -5);
+                        bullets.splice(i, 1);
+                    }
+                }
+            }
+            
+            knockback(x, y) {
+                this.velX = x;
+                this.velY = y;
+                this.jumping = true;
+                this.invulnerable = 30;
+            }
+            
+            respawn() {
+                this.x = cameraX + 100;
+                this.y = 200;
+                this.velX = 0;
+                this.velY = 0;
+                this.jumping = false;
+                this.invulnerable = 60;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - cameraX, this.y, this.width, this.height);
+                
+                ctx.fillStyle = '#222';
+                ctx.fillRect(this.x - cameraX + 10, this.y + 10, 8, 8);
+                ctx.fillRect(this.x - cameraX + 22, this.y + 10, 8, 8);
+                ctx.fillRect(this.x - cameraX + 10, this.y + 25, 20, 4);
+                
+                if (this.invulnerable > 0 && Math.floor(this.invulnerable / 5) % 2 === 0) {
+                    ctx.strokeStyle = '#FFFFFF';
+                } else {
+                    ctx.strokeStyle = '#4af626';
+                }
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - cameraX, this.y, this.width, this.height);
+            }
+        }
+        
+        // Класс врага с фиксацией на платформах
+        class Enemy {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 40;
+                this.color = ['#FF2E63', '#FFDE7D', '#6A2C70', '#08D9D6'][Math.floor(Math.random() * 4)];
+                this.speed = 1 + Math.random() * 2;
+                this.direction = Math.random() > 0.5 ? 1 : -1;
+                this.startX = x;
+                this.patrolRange = 100 + Math.random() * 200;
+                this.grounded = false;
+                this.velY = 0;
+                this.gravity = 0.8;
+            }
+            
+            update() {
+                // Гравитация
+                this.velY += this.gravity;
+                this.y += this.velY;
+                
+                // Горизонтальное движение
+                this.x += this.speed * this.direction;
+                if (Math.abs(this.x - this.startX) > this.patrolRange) {
+                    this.direction *= -1;
+                }
+                
+                // Проверка коллизий с платформами
+                this.grounded = false;
+                for (let platform of platforms) {
+                    // Проверка столкновения сверху (враг стоит на платформе)
+                    if (this.x < platform.x + platform.width &&
+                        this.x + this.width > platform.x &&
+                        this.y + this.height > platform.y &&
+                        this.y + this.height < platform.y + 30 &&
+                        this.velY >= 0) {
+                        
+                        this.y = platform.y - this.height;
+                        this.velY = 0;
+                        this.grounded = true;
+                        
+                        // Отскок от краев платформы
+                        if (this.x <= platform.x + 5 || this.x + this.width >= platform.x + platform.width - 5) {
+                            this.direction *= -1;
+                        }
+                    }
+                }
+                
+                // Если враг упал за пределы экрана, возвращаем его на стартовую позицию
+                if (this.y > canvas.height + 100) {
+                    this.y = 200;
+                    this.x = this.startX;
+                    this.velY = 0;
+                }
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - cameraX, this.y, this.width, this.height);
+                
+                ctx.fillStyle = '#000';
+                ctx.fillRect(this.x - cameraX + 10, this.y + 10, 8, 8);
+                ctx.fillRect(this.x - cameraX + this.width - 18, this.y + 10, 8, 8);
+                
+                // Ноги (индикатор земли)
+                ctx.fillStyle = this.grounded ? '#00ff00' : '#ff0000';
+                ctx.fillRect(this.x - cameraX + 15, this.y + this.height - 5, 10, 5);
+            }
+        }
+        
+        // Класс платформы
+        class Platform {
+            constructor(x, y, width, color) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = 25;
+                this.color = color;
+            }
+            
+            draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(this.x - cameraX + 3, this.y + 3, this.width, this.height);
+                
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - cameraX, this.y, this.width, this.height);
+                
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - cameraX, this.y, this.width, this.height);
+            }
+        }
+        
+        // Генерация уровня
+        function generateLevel(level) {
+            platforms = [];
+            enemies = [];
+            bullets = [];
+            particles = [];
+            powerUps = [];
+            coins = [];
+            
+            const platformCount = 15 + Math.floor(level * 1.5);
+            const enemyCount = 2 + Math.floor(level);
+            levelWidth = 2000 + (level - 1) * 300;
+            
+            // Стартовая платформа
+            platforms.push(new Platform(80, canvas.height - 200, 180, '#FF2E63'));
+            
+            // Генерация платформ
+            let lastX = 100;
+            let lastY = canvas.height - 250;
+            
+            for (let i = 0; i < platformCount; i++) {
+                const width = 80 + Math.random() * 120;
+                const x = lastX + 150 + Math.random() * 100;
+                
+                let y;
+                if (Math.random() > 0.5) {
+                    y = lastY - 80 - Math.random() * 60;
+                } else {
+                    y = lastY + 80 + Math.random() * 60;
+                }
+                
+                y = Math.max(100, Math.min(canvas.height - 150, y));
+                
+                const colors = ['#FF2E63', '#08D9D6', '#FFDE7D', '#6A2C70', '#4ECDC4', '#FF9A76'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                const platform = new Platform(x, y, width, color);
+                platforms.push(platform);
+                
+                // Добавляем врагов на платформы (кроме первых двух и последних двух)
+                if (i > 1 && i < platformCount - 2 && enemyCount > enemies.length && Math.random() > 0.5) {
+                    enemies.push(new Enemy(
+                        platform.x + platform.width/2 - 20,
+                        platform.y - 40
+                    ));
+                }
+                
+                lastX = x;
+                lastY = y;
+            }
+            
+            // Финальная платформа
+            platforms.push(new Platform(levelWidth - 200, canvas.height - 200, 200, '#4af626'));
+            
+            // Если врагов недостаточно, добавляем еще
+            while (enemies.length < enemyCount) {
+                const platformIndex = Math.floor(Math.random() * (platforms.length - 5)) + 2;
+                const platform = platforms[platformIndex];
+                
+                enemies.push(new Enemy(
+                    platform.x + platform.width/2 - 20,
+                    platform.y - 40
+                ));
+            }
+            
+            return levelWidth;
+        }
+        
+        // Обновление камеры
+        function updateCamera() {
+            const targetX = player.x - canvas.width * 0.35;
+            cameraX += (targetX - cameraX) * 0.1;
+            cameraX = Math.max(0, Math.min(cameraX, levelWidth - canvas.width));
+        }
+        
+        // Обновление пуль
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.x += bullet.vx;
+                bullet.y += bullet.vy;
+                
+                if (bullet.x < cameraX - 100 || 
+                    bullet.x > cameraX + canvas.width + 100 ||
+                    bullet.y < -100 || 
+                    bullet.y > canvas.height + 100) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+        
+        // Отрисовка фона
+        function drawBackground() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a0a1a');
+            gradient.addColorStop(1, '#000000');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Звезды
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 71 + cameraX * 0.2) % canvas.width;
+                const y = (i * 43) % canvas.height;
+                const size = Math.random() * 2;
+                ctx.fillRect(x, y, size, size);
+            }
+        }
+        
+        // Отрисовка цели
+        function drawGoal() {
+            const goalX = levelWidth - cameraX;
+            
+            if (goalX < canvas.width + 100 && goalX > -100) {
+                ctx.strokeStyle = '#4af626';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(goalX, 0);
+                ctx.lineTo(goalX, canvas.height);
+                ctx.stroke();
+                
+                const pulse = Math.sin(Date.now() / 300) * 0.5 + 0.5;
+                ctx.fillStyle = `rgba(74, 246, 38, ${pulse})`;
+                ctx.font = 'bold 24px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('→ ФИНИШ', goalX, canvas.height - 50);
+            }
+        }
+        
+        // Отрисовка пуль
+        function drawBullets() {
+            for (const bullet of bullets) {
+                ctx.fillStyle = bullet.color;
+                ctx.beginPath();
+                ctx.arc(bullet.x - cameraX, bullet.y, bullet.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Отрисовка игрового мира
+        function drawWorld() {
+            for (let platform of platforms) {
+                platform.draw();
+            }
+            
+            for (let enemy of enemies) {
+                enemy.update();
+                enemy.draw();
+            }
+            
+            updateBullets();
+            drawBullets();
+            player.draw();
+            drawGoal();
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            levelDisplay.textContent = currentLevel;
+            scoreDisplay.textContent = score;
+        }
+        
+        // Добавление очков
+        function addScore(points) {
+            score += points;
+            updateUI();
+        }
+        
+        // Получение урона
+        function takeDamage(amount) {
+            if (player.invulnerable > 0) return;
+            
+            playerHealth = Math.max(0, playerHealth - amount);
+            healthFill.style.width = `${(playerHealth / maxHealth) * 100}%`;
+            
+            if (playerHealth <= 0) {
+                gameOver();
+            }
+        }
+        
+        // Игровой цикл
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            player.update();
+            
+            if (player.x > levelWidth - 100) {
+                completeLevel();
+                return;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            drawWorld();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Завершение уровня
+        function completeLevel() {
+            gameRunning = false;
+            addScore(1000 * currentLevel);
+            levelComplete.style.display = 'flex';
+            
+            setTimeout(() => {
+                levelComplete.style.display = 'none';
+                currentLevel++;
+                generateLevel(currentLevel);
+                player = new Player();
+                playerHealth = maxHealth;
+                healthFill.style.width = '100%';
+                cameraX = 0;
+                gameRunning = true;
+                gameLoop();
+            }, 1500);
+        }
+        
+        // Конец игры
+        function gameOver() {
+            gameRunning = false;
+            finalScore.textContent = score;
+            finalLevel.textContent = currentLevel - 1;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Перезапуск игры
+        window.restartGame = function() {
+            gameOverScreen.style.display = 'none';
+            currentLevel = 1;
+            score = 0;
+            playerHealth = maxHealth;
+            generateLevel(currentLevel);
+            player = new Player();
+            cameraX = 0;
+            updateUI();
+            healthFill.style.width = '100%';
+            gameRunning = true;
+            gameLoop();
+        };
+        
+        // Обработка ввода
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if ((e.key === 'r' || e.key === 'R') && !gameRunning && gameOverScreen.style.display === 'flex') {
+                restartGame();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Обработка изменения размера
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            if (gameRunning) {
+                generateLevel(currentLevel);
+                player = new Player();
+                cameraX = 0;
+            }
+        });
+        
+        // Инициализация
+        function initGame() {
+            resizeCanvas();
+            
+            setTimeout(() => {
+                loading.style.opacity = '0';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 500);
+            }, 1000);
+            
+            generateLevel(currentLevel);
+            player = new Player();
+            updateUI();
+            healthFill.style.width = '100%';
+            gameLoop();
+        }
+        
+        window.addEventListener('load', initGame);
+        
+        // Предотвращение стандартных действий клавиш
+        window.addEventListener('keydown', (e) => {
+            if ([32, 37, 38, 39, 65, 68, 87, 83, 70].includes(e.keyCode)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

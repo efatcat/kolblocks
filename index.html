@@ -91,6 +91,18 @@
             color: #0a3b48;
         }
 
+        /* бейдж для самой новой версии — легкий акцент */
+        .badge-new {
+            background: #d4e3ed;
+            font-size: 0.7rem;
+            font-weight: normal;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.6rem;
+            color: #1f5e6e;
+            vertical-align: middle;
+        }
+
         .link-note {
             font-size: 0.8rem;
             color: #6c8b9a;
@@ -175,6 +187,10 @@
             .header-with-logo {
                 gap: 10px;
             }
+            .badge-new {
+                font-size: 0.6rem;
+                margin-left: 0.4rem;
+            }
         }
 
         a:active, a:focus {
@@ -193,21 +209,31 @@
 <body>
 
 <div class="container">
-    <!-- ШАПКА С ЛОГОТИПОМ (изображение из ссылки) -->
+    <!-- ШАПКА С ЛОГОТИПОМ -->
     <div class="header-with-logo">
         <img class="site-logo" src="https://sun9-39.userapi.com/s/v1/ig2/CBiPFP8Y5S72VS0NbgcLRL-FTqxvA3RtJbH2yhCJqCGvKsiilkf2Gm3_CwXAEDvlxvvdKqq9SUbuehSlxhb1GU87.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x359,480x479,540x539,599x598&from=bu&cs=599x0" alt="Логотип Kolblocks">
         <h1>Kolblocks</h1>
     </div>
     <div class="sub">версии игры — выше строка, новее релиз</div>
 
-    <!-- СПИСОК ВЕРСИЙ -->
+    <!-- СПИСОК ВЕРСИЙ (самая новая - вверху) -->
     <div class="versions-list">
+        <!-- 1. НОВАЯ версия ver2 Elo (эло + кейсы) -->
+        <div class="version-row">
+            <a href="https://efatcat.github.io/kolblocks/ver2/elo" class="version-link" target="_blank" rel="noopener noreferrer">
+                ⚡ ver2 Elo (эло + кейсы) 
+                <span class="badge-new">новое</span>
+            </a>
+        </div>
+        <!-- 2. ver2 (новые функции) -->
         <div class="version-row">
             <a href="https://efatcat.github.io/kolblocks/ver2" class="version-link" target="_blank" rel="noopener noreferrer">✨ ver2 (новые функции)</a>
         </div>
+        <!-- 3. ver1 (выпуск Колблокса) -->
         <div class="version-row">
             <a href="https://efatcat.github.io/kolblocks/ver1" class="version-link" target="_blank" rel="noopener noreferrer">📦 ver1 (выпуск Колблокса)</a>
         </div>
+        <!-- 4. ver1 Lite (оптимально для слабых компьютеров) -->
         <div class="version-row">
             <a href="https://efatcat.github.io/kolblocks/ver1/lite" class="version-link" target="_blank" rel="noopener noreferrer">⚡ ver1 Lite (оптимально для слабых компьютеров)</a>
         </div>
@@ -241,27 +267,32 @@
 
 <script>
     (function() {
-        // Проверка/коррекция ссылок на версии
-        const ver2Link = document.getElementById('ver2-link');
-        const ver1Link = document.getElementById('ver1-link');
-        const ver1LiteLink = document.getElementById('ver1lite-link');
-        // заметим, что у ссылок выше нет id, добавим их через поиск, чтобы код был надёжнее
-        const links = document.querySelectorAll('.version-link');
-        if (links.length >= 3) {
-            if (links[0].getAttribute('href') !== 'https://efatcat.github.io/kolblocks/ver2') links[0].setAttribute('href', 'https://efatcat.github.io/kolblocks/ver2');
-            if (links[1].getAttribute('href') !== 'https://efatcat.github.io/kolblocks/ver1') links[1].setAttribute('href', 'https://efatcat.github.io/kolblocks/ver1');
-            if (links[2].getAttribute('href') !== 'https://efatcat.github.io/kolblocks/ver1/lite') links[2].setAttribute('href', 'https://efatcat.github.io/kolblocks/ver1/lite');
+        // убедимся, что все ссылки ведут туда, куда нужно (дополнительная страховка)
+        const rows = document.querySelectorAll('.version-row .version-link');
+        const expectedHrefs = [
+            'https://efatcat.github.io/kolblocks/ver2/elo',
+            'https://efatcat.github.io/kolblocks/ver2',
+            'https://efatcat.github.io/kolblocks/ver1',
+            'https://efatcat.github.io/kolblocks/ver1/lite'
+        ];
+        
+        for (let i = 0; i < rows.length && i < expectedHrefs.length; i++) {
+            if (rows[i].getAttribute('href') !== expectedHrefs[i]) {
+                rows[i].setAttribute('href', expectedHrefs[i]);
+            }
+            // открывать в новой вкладке, безопасно
+            if (!rows[i].getAttribute('target')) rows[i].setAttribute('target', '_blank');
+            if (!rows[i].getAttribute('rel')) rows[i].setAttribute('rel', 'noopener noreferrer');
         }
-        // Все внешние ссылки открываются безопасно
-        for (let link of links) {
-            if (!link.getAttribute('target')) link.setAttribute('target', '_blank');
-            if (!link.getAttribute('rel')) link.setAttribute('rel', 'noopener noreferrer');
-        }
-        // Ссылка на ВК
+        
+        // ссылка на VK
         const vkLink = document.querySelector('.vk-link-card a');
         if (vkLink && vkLink.getAttribute('href') !== 'https://vk.com/club237311687') {
             vkLink.setAttribute('href', 'https://vk.com/club237311687');
         }
+        
+        // небольшой лог для информации
+        console.log('Kolblocks — добавлена новая версия ver2 Elo (эло + кейсы) в самый верх списка');
     })();
 </script>
 </body>

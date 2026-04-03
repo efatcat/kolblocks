@@ -27,7 +27,7 @@ const AURA_SKINS = [
     { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 30 },
     { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 20 },
     { id: 'cosmic_aura', name: 'Космическая аура', color: '#9b59b6', effectColor: 'rgba(155, 89, 182, 0.6)', chance: 9 },
-    { id: 'batidao_aura', name: 'Но батидао', color: '#ff0000', effectColor: 'rgba(255, 0, 0, 0.8)', chance: 1, image: 'https://populars-music.ru/uploads/posts/2025-12/3a3bb41f46_poster.jpg' }
+    { id: 'batidao_aura', name: 'Но батидао', color: '#ff0000', effectColor: 'rgba(255, 0, 0, 0.8)', chance: 1, image: 'https://images.genius.com/3849b06fe11fa1c89ba96465b298457c.1000x1000x1.png' }
 ];
 
 // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
@@ -252,6 +252,7 @@ function showResult(title, text, col) {
 
 function hideResult() { document.getElementById('chestResult').style.display = 'none'; }
 
+// Функция показа эффекта ауры при ударе с использованием картинки для "Но батидао"
 function showAuraEffect(x, y, aura) {
     const effect = document.createElement('div');
     effect.className = 'aura-effect';
@@ -259,12 +260,82 @@ function showAuraEffect(x, y, aura) {
     effect.style.top = (y - 150) + 'px';
     effect.style.width = '300px';
     effect.style.height = '300px';
-    effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
-    effect.style.boxShadow = `0 0 40px ${aura.color}`;
+    effect.style.position = 'fixed';
     effect.style.pointerEvents = 'none';
     effect.style.zIndex = '200';
+    effect.style.borderRadius = '50%';
+    
+    if (aura.id === 'batidao_aura' && batidaoImage) {
+        // Специальный эффект с картинкой для "Но батидао"
+        effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
+        effect.style.backgroundImage = `url(${batidaoImage.src})`;
+        effect.style.backgroundSize = 'cover';
+        effect.style.backgroundPosition = 'center';
+        effect.style.backgroundBlend = 'overlay';
+        effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
+        effect.style.animation = 'batidaoAura 0.6s ease-out forwards';
+        
+        // Добавляем красные частицы
+        for (let i = 0; i < 40; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 250) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 250) + 'px';
+                particle.style.width = (Math.random() * 10 + 5) + 'px';
+                particle.style.height = (Math.random() * 10 + 5) + 'px';
+                particle.style.background = `#ff${Math.floor(Math.random() * 55 + 200).toString(16)}00`;
+                particle.style.borderRadius = '50%';
+                particle.style.boxShadow = `0 0 15px ${aura.color}`;
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '199';
+                particle.style.animation = 'particleExplode 0.6s ease-out forwards';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 600);
+            }, i * 8);
+        }
+    } else {
+        effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
+        effect.style.boxShadow = `0 0 40px ${aura.color}`;
+        effect.style.animation = 'auraExpand 0.5s ease-out forwards';
+    }
+    
     document.body.appendChild(effect);
     setTimeout(() => effect.remove(), 500);
+}
+
+// Добавляем CSS анимации
+const styleSheet = document.createElement("style");
+styleSheet.textContent = `
+    @keyframes auraExpand {
+        0% { transform: scale(0.5); opacity: 0.8; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+    @keyframes batidaoAura {
+        0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+        100% { transform: scale(1.8) rotate(360deg); opacity: 0; }
+    }
+    @keyframes particleExplode {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0) translateY(-80px); opacity: 0; }
+    }
+`;
+document.head.appendChild(styleSheet);
+
+// Загрузка изображения для ауры "Но батидао"
+function loadBatidaoImage() {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => { 
+        batidaoImage = img; 
+        console.log('Изображение для ауры "Но батидао" загружено');
+    };
+    img.onerror = () => {
+        console.log('Не удалось загрузить изображение, использую стандартный эффект');
+        batidaoImage = null;
+    };
+    img.src = 'https://images.genius.com/3849b06fe11fa1c89ba96465b298457c.1000x1000x1.png';
 }
 
 // ==================== ИГРОВЫЕ КЛАССЫ ====================
@@ -542,6 +613,7 @@ async function initGame(){
     resizeCanvas();
     AudioSys.init();
     await bossTextures.load();
+    loadBatidaoImage(); // Загружаем изображение для ауры "Но батидао"
     particlePool=new ObjectPool((x,y,c)=>new Particle(x,y,c),CONFIG.particles.maxCount);
     let progress=0;
     const pi=setInterval(()=>{

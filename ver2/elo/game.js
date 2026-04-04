@@ -21,7 +21,7 @@ const CHEST_SKINS = [
     { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 2 }
 ];
 
-// Ауры для кейса (теперь за обычные ключи)
+// Ауры для кейса
 const AURA_SKINS = [
     { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 40 },
     { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 30 },
@@ -40,6 +40,7 @@ let equippedAura = localStorage.getItem('kolblocks_equipped_aura') || null;
 let roundCoins = 0, roundDamage = 0;
 
 let batidaoImage = null;
+let activeAuraEffect = null; // Для отслеживания активного эффекта ауры
 
 // ==================== АУДИО ====================
 const AudioSys = {
@@ -170,7 +171,8 @@ function openShop() {
 
 function closeShop() {
     document.getElementById('caseShopScreen').style.display = 'none';
-    gameRunning = true; gameLoop();
+    gameRunning = true; 
+    if (typeof gameLoop === 'function') gameLoop();
 }
 
 function renderSkins() {
@@ -252,73 +254,91 @@ function showResult(title, text, col) {
 
 function hideResult() { document.getElementById('chestResult').style.display = 'none'; }
 
-// Функция показа эффекта ауры при ударе с использованием картинки для "Но батидао"
-function showAuraEffect(x, y, aura) {
+// Функция показа эффекта ауры ПРИВЯЗАННАЯ К ИГРОКУ
+function showAuraEffectOnPlayer(x, y, aura) {
+    // Удаляем старый эффект если есть
+    if (activeAuraEffect) {
+        activeAuraEffect.remove();
+        activeAuraEffect = null;
+    }
+    
     const effect = document.createElement('div');
-    effect.className = 'aura-effect';
-    effect.style.left = (x - 150) + 'px';
-    effect.style.top = (y - 150) + 'px';
-    effect.style.width = '300px';
-    effect.style.height = '300px';
+    effect.className = 'aura-effect player-aura';
     effect.style.position = 'fixed';
     effect.style.pointerEvents = 'none';
     effect.style.zIndex = '200';
     effect.style.borderRadius = '50%';
     
     if (aura.id === 'batidao_aura' && batidaoImage) {
-        // Специальный эффект с картинкой для "Но батидао"
         effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
         effect.style.backgroundImage = `url(${batidaoImage.src})`;
         effect.style.backgroundSize = 'cover';
         effect.style.backgroundPosition = 'center';
         effect.style.backgroundBlend = 'overlay';
         effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
-        effect.style.animation = 'batidaoAura 0.6s ease-out forwards';
+        effect.style.animation = 'batidaoAuraPlayer 0.5s ease-out forwards';
         
         // Добавляем красные частицы
-        for (let i = 0; i < 40; i++) {
+        for (let i = 0; i < 30; i++) {
             setTimeout(() => {
                 const particle = document.createElement('div');
                 particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 250) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 250) + 'px';
-                particle.style.width = (Math.random() * 10 + 5) + 'px';
-                particle.style.height = (Math.random() * 10 + 5) + 'px';
+                particle.style.left = (x + (Math.random() - 0.5) * 180) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 180) + 'px';
+                particle.style.width = (Math.random() * 8 + 4) + 'px';
+                particle.style.height = (Math.random() * 8 + 4) + 'px';
                 particle.style.background = `#ff${Math.floor(Math.random() * 55 + 200).toString(16)}00`;
                 particle.style.borderRadius = '50%';
                 particle.style.boxShadow = `0 0 15px ${aura.color}`;
                 particle.style.pointerEvents = 'none';
                 particle.style.zIndex = '199';
-                particle.style.animation = 'particleExplode 0.6s ease-out forwards';
+                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
                 document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 600);
-            }, i * 8);
+                setTimeout(() => particle.remove(), 500);
+            }, i * 10);
         }
     } else {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
         effect.style.boxShadow = `0 0 40px ${aura.color}`;
-        effect.style.animation = 'auraExpand 0.5s ease-out forwards';
+        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
     }
     
+    // Позиционируем эффект относительно игрока
+    effect.style.left = (x - 150) + 'px';
+    effect.style.top = (y - 150) + 'px';
+    effect.style.width = '300px';
+    effect.style.height = '300px';
+    
     document.body.appendChild(effect);
-    setTimeout(() => effect.remove(), 500);
+    activeAuraEffect = effect;
+    
+    // Удаляем эффект через время
+    setTimeout(() => {
+        if (activeAuraEffect) {
+            activeAuraEffect.remove();
+            activeAuraEffect = null;
+        }
+    }, 500);
 }
 
 // Добавляем CSS анимации
 const styleSheet = document.createElement("style");
 styleSheet.textContent = `
-    @keyframes auraExpand {
-        0% { transform: scale(0.5); opacity: 0.8; }
-        100% { transform: scale(1.5); opacity: 0; }
+    @keyframes auraExpandPlayer {
+        0% { transform: scale(0.5) translate(0, 0); opacity: 0.8; }
+        100% { transform: scale(1.5) translate(0, 0); opacity: 0; }
     }
-    @keyframes batidaoAura {
+    @keyframes batidaoAuraPlayer {
         0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
         50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
         100% { transform: scale(1.8) rotate(360deg); opacity: 0; }
     }
     @keyframes particleExplode {
         0% { transform: scale(1); opacity: 1; }
-        100% { transform: scale(0) translateY(-80px); opacity: 0; }
+        100% { transform: scale(0) translateY(-60px); opacity: 0; }
+    }
+    .player-aura {
+        transform-origin: center center;
     }
 `;
 document.head.appendChild(styleSheet);
@@ -389,9 +409,15 @@ class Player {
         const centerX = this.x + this.width/2;
         const centerY = this.y + this.height/2;
         
+        // Показываем эффект ауры ПРИВЯЗАННЫЙ К ИГРОКУ
         if (equippedAura) {
             const aura = getAuraData(equippedAura);
-            if (aura) showAuraEffect(centerX, centerY, aura);
+            if (aura) {
+                // Получаем экранные координаты игрока
+                const screenX = centerX - cameraX;
+                const screenY = centerY;
+                showAuraEffectOnPlayer(screenX, screenY, aura);
+            }
         }
         
         let hitSomething = false;
@@ -595,48 +621,95 @@ function restartGame(){
     document.getElementById('bossHealthBar').style.display='none';gameRunning=true;gameLoop();
 }
 
-function togglePause(){const pm=document.getElementById('pauseMenu');if(pm.style.display==='flex'){pm.style.display='none';gameRunning=true;gameLoop();}else{showPauseMenu();}}
-function showPauseMenu(){gameRunning=false;document.getElementById('pauseMenu').style.display='flex';}
-function performMelee(){if(gameRunning&&player)player.meleeAttack();}
+function togglePause(){
+    const pm = document.getElementById('pauseMenu');
+    if(pm.style.display === 'flex'){
+        pm.style.display = 'none';
+        gameRunning = true;
+        gameLoop();
+    } else {
+        showPauseMenu();
+    }
+}
+
+function showPauseMenu(){
+    gameRunning = false;
+    document.getElementById('pauseMenu').style.display = 'flex';
+}
+
+function performMelee(){
+    if(gameRunning && player) player.meleeAttack();
+}
 
 // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
-window.addEventListener('keydown',(e)=>{keys[e.key]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.key==='v'||e.key==='V'||e.key==='м'||e.key==='М'){e.preventDefault();performMelee();}if((e.key==='p'||e.key==='P'||e.key==='Escape')&&gameRunning){showPauseMenu();}if((e.key==='r'||e.key==='R')&&!gameRunning)restartGame();});
-window.addEventListener('keyup',(e)=>{keys[e.key]=false;});
-canvas.addEventListener('mousedown',(e)=>{if(e.button===0&&gameRunning){performMelee();}});
+window.addEventListener('keydown', (e) => {
+    keys[e.key] = true;
+    if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+    if(e.key === 'v' || e.key === 'V' || e.key === 'м' || e.key === 'М'){
+        e.preventDefault();
+        performMelee();
+    }
+    if((e.key === 'p' || e.key === 'P' || e.key === 'Escape')){
+        e.preventDefault();
+        togglePause();
+    }
+    if((e.key === 'r' || e.key === 'R') && !gameRunning) restartGame();
+});
+window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+canvas.addEventListener('mousedown', (e) => { if(e.button === 0 && gameRunning){ performMelee(); } });
 
-function setupMobileControls(){const isTouch='ontouchstart' in window||navigator.maxTouchPoints>0;if(isTouch||window.innerWidth<=768){document.getElementById('mobileControls').style.display='flex';const bind=(id,key)=>{const btn=document.getElementById(id);btn.addEventListener('touchstart',(e)=>{e.preventDefault();keys[key]=true;});btn.addEventListener('touchend',(e)=>{e.preventDefault();keys[key]=false;});btn.addEventListener('mousedown',()=>keys[key]=true);btn.addEventListener('mouseup',()=>keys[key]=false);btn.addEventListener('mouseleave',()=>keys[key]=false);};bind('btnLeft','ArrowLeft');bind('btnRight','ArrowRight');bind('btnJump',' ');bind('btnDash','Shift');document.getElementById('btnAttack').addEventListener('touchstart',(e)=>{e.preventDefault();performMelee();});document.getElementById('btnAttack').addEventListener('mousedown',()=>performMelee());}}
+function setupMobileControls(){
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if(isTouch || window.innerWidth <= 768){
+        document.getElementById('mobileControls').style.display = 'flex';
+        const bind = (id, key) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+            btn.addEventListener('mousedown', () => keys[key] = true);
+            btn.addEventListener('mouseup', () => keys[key] = false);
+            btn.addEventListener('mouseleave', () => keys[key] = false);
+        };
+        bind('btnLeft', 'ArrowLeft');
+        bind('btnRight', 'ArrowRight');
+        bind('btnJump', ' ');
+        bind('btnDash', 'Shift');
+        document.getElementById('btnAttack').addEventListener('touchstart', (e) => { e.preventDefault(); performMelee(); });
+        document.getElementById('btnAttack').addEventListener('mousedown', () => performMelee());
+    }
+}
 
-document.getElementById('soundToggle').addEventListener('change',(e)=>{CONFIG.audio.enabled=e.target.checked;AudioSys.enabled=e.target.checked;});
-document.getElementById('particlesToggle').addEventListener('change',(e)=>{CONFIG.particles.enabled=e.target.checked;if(!e.target.checked)particlePool?.releaseAll();});
+document.getElementById('soundToggle').addEventListener('change', (e) => { CONFIG.audio.enabled = e.target.checked; AudioSys.enabled = e.target.checked; });
+document.getElementById('particlesToggle').addEventListener('change', (e) => { CONFIG.particles.enabled = e.target.checked; if(!e.target.checked) particlePool?.releaseAll(); });
 
 async function initGame(){
     resizeCanvas();
     AudioSys.init();
     await bossTextures.load();
-    loadBatidaoImage(); // Загружаем изображение для ауры "Но батидао"
-    particlePool=new ObjectPool((x,y,c)=>new Particle(x,y,c),CONFIG.particles.maxCount);
-    let progress=0;
-    const pi=setInterval(()=>{
-        progress+=Math.random()*15;
-        document.getElementById('progressFill').style.width=`${Math.min(progress,100)}%`;
-        if(progress>=100){
+    loadBatidaoImage();
+    particlePool = new ObjectPool((x,y,c) => new Particle(x,y,c), CONFIG.particles.maxCount);
+    let progress = 0;
+    const pi = setInterval(() => {
+        progress += Math.random() * 15;
+        document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
+        if(progress >= 100){
             clearInterval(pi);
-            setTimeout(()=>{
-                document.getElementById('loading').style.opacity='0';
-                setTimeout(()=>document.getElementById('loading').style.display='none',500);
-            },300);
+            setTimeout(() => {
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
+            }, 300);
         }
-    },100);
+    }, 100);
     generateLevel(currentLevel);
-    player=new Player();
+    player = new Player();
     updateUI();
     updateHealthBar();
     updateDashIndicator();
     updateEloDisplay();
     setupMobileControls();
-    setTimeout(()=>{gameRunning=true;gameLoop();},800);
+    setTimeout(() => { gameRunning = true; gameLoop(); }, 800);
 }
 
-window.addEventListener('load',initGame);
-window.addEventListener('resize',()=>{resizeCanvas();if(gameRunning){generateLevel(currentLevel);player.reset();cameraX=0;}});
-document.addEventListener('touchmove',(e)=>{if(!e.target.closest('#mobileControls'))e.preventDefault();},{passive:false});
+window.addEventListener('load', initGame);
+window.addEventListener('resize', () => { resizeCanvas(); if(gameRunning){ generateLevel(currentLevel); player.reset(); cameraX = 0; } });
+document.addEventListener('touchmove', (e) => { if(!e.target.closest('#mobileControls')) e.preventDefault(); }, { passive: false });

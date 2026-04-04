@@ -1,4 +1,17 @@
 /* style.css */
+/* Подключение шрифта Rostov */
+@font-face {
+    font-family: 'Rostov';
+    src: url('Rostov.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Альтернативные варианты подключения, если файл в другой папке */
+/* src: url('../fonts/Rostov.ttf') format('truetype'); */
+/* src: url('./assets/fonts/Rostov.ttf') format('truetype'); */
+
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +24,7 @@
 body {
     overflow: hidden;
     background: #111;
-    font-family: 'Segoe UI', 'Arial', sans-serif;
+    font-family: 'Rostov', 'Segoe UI', 'Arial', sans-serif;
     touch-action: none;
 }
 
@@ -36,6 +49,7 @@ canvas {
     font-size: 24px;
     z-index: 1000;
     transition: opacity 0.5s;
+    font-family: 'Rostov', monospace;
 }
 
 #loading .spinner {
@@ -82,6 +96,7 @@ canvas {
     color: #fff;
     z-index: 500;
     backdrop-filter: blur(10px);
+    font-family: 'Rostov', sans-serif;
 }
 
 #pauseMenu {
@@ -221,6 +236,7 @@ canvas {
     color: #ccc;
     font-size: 14px;
     margin: 10px 0;
+    font-family: 'Rostov', sans-serif;
 }
 
 #bossWarning {
@@ -234,6 +250,7 @@ canvas {
     text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
     animation: bossPulse 0.5s ease-in-out infinite alternate;
     margin-bottom: 20px;
+    font-family: 'Rostov', monospace;
 }
 
 @keyframes bossPulse {
@@ -249,6 +266,7 @@ canvas {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: glow 2s ease-in-out infinite alternate;
+    font-family: 'Rostov', monospace;
 }
 
 @keyframes glow {
@@ -260,6 +278,7 @@ canvas {
     font-size: 18px;
     color: #ccc;
     margin: 8px 0;
+    font-family: 'Rostov', sans-serif;
 }
 
 .controls-info {
@@ -270,6 +289,7 @@ canvas {
     text-align: left;
     font-size: 14px;
     line-height: 1.8;
+    font-family: 'Rostov', monospace;
 }
 
 .controls-info span {
@@ -277,6 +297,7 @@ canvas {
     font-weight: bold;
     display: inline-block;
     min-width: 100px;
+    font-family: 'Rostov', monospace;
 }
 
 .controls-info .highlight {
@@ -299,6 +320,7 @@ canvas {
     min-width: 240px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     transition: transform 0.2s;
+    font-family: 'Rostov', monospace;
 }
 
 #ui:hover {
@@ -312,7 +334,7 @@ canvas {
     color: #4af626;
     font-size: 26px;
     font-weight: bold;
-    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-family: 'Rostov', 'Impact', 'Arial Black', sans-serif;
     text-shadow: 0 0 10px #4af626, 0 0 25px #4af626, 0 0 40px #08D9D6;
     background: rgba(10, 10, 26, 0.7);
     padding: 10px 22px;
@@ -397,6 +419,7 @@ canvas {
     font-weight: bold;
     font-size: 14px;
     text-shadow: 0 0 5px #000;
+    font-family: 'Rostov', monospace;
 }
 
 #comboDisplay {
@@ -411,6 +434,7 @@ canvas {
     opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
     pointer-events: none;
+    font-family: 'Rostov', monospace;
 }
 
 #comboDisplay.active {
@@ -460,6 +484,7 @@ canvas {
     padding: 8px 15px;
     border-radius: 20px;
     border: 1px solid #08D9D6;
+    font-family: 'Rostov', monospace;
 }
 
 #checkpointIndicator.active {
@@ -487,6 +512,7 @@ canvas {
     border: 1px solid #FFDE7D;
     box-shadow: 0 0 15px rgba(255, 222, 125, 0.3);
     animation: eloPulse 2s ease-in-out infinite;
+    font-family: 'Rostov', monospace;
 }
 
 @keyframes eloPulse {
@@ -505,6 +531,7 @@ canvas {
     pointer-events: none;
     animation: eloChangeAnim 1.5s ease-out forwards;
     text-shadow: 0 0 20px currentColor;
+    font-family: 'Rostov', monospace;
 }
 
 .elo-change.positive {
@@ -537,6 +564,7 @@ button {
     letter-spacing: 1px;
     position: relative;
     overflow: hidden;
+    font-family: 'Rostov', monospace;
 }
 
 button::before {
@@ -589,10 +617,12 @@ button:disabled {
     color: #4af626;
     font-weight: bold;
     font-size: 18px;
+    font-family: 'Rostov', monospace;
 }
 
 .stat-label {
     color: #aaa;
+    font-family: 'Rostov', sans-serif;
 }
 
 #mobileControls {
@@ -622,6 +652,7 @@ button:disabled {
     pointer-events: auto;
     touch-action: manipulation;
     transition: all 0.15s;
+    font-family: 'Rostov', monospace;
 }
 
 .mobile-btn:active {
@@ -674,6 +705,7 @@ button:disabled {
     color: #FFDE7D;
     font-weight: bold;
     font-size: 18px;
+    font-family: 'Rostov', monospace;
 }
 
 .skins-grid {
@@ -724,6 +756,7 @@ button:disabled {
     font-size: 12px;
     color: #eee;
     text-align: center;
+    font-family: 'Rostov', sans-serif;
 }
 
 .equip-btn {
@@ -751,16 +784,19 @@ button:disabled {
     z-index: 2000;
     display: none;
     min-width: 250px;
+    font-family: 'Rostov', sans-serif;
 }
 
 #chestResult h3 {
     margin-bottom: 10px;
     font-size: 24px;
+    font-family: 'Rostov', monospace;
 }
 
 #chestResult p {
     color: #ccc;
     margin-bottom: 15px;
+    font-family: 'Rostov', sans-serif;
 }
 
 /* Анимация ауры при ударе */
@@ -781,6 +817,18 @@ button:disabled {
         transform: scale(3);
         opacity: 0;
     }
+}
+
+/* Анимации для "Но батидао" */
+@keyframes batidaoAura {
+    0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+    100% { transform: scale(1.8) rotate(360deg); opacity: 0; }
+}
+
+@keyframes particleExplode {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0) translateY(-80px); opacity: 0; }
 }
 
 @media (max-width: 768px) {
@@ -853,6 +901,7 @@ button:disabled {
     font-size: 24px;
     animation: keyFloat 1s ease-out forwards;
     z-index: 200;
+    font-family: 'Rostov', monospace;
 }
 
 @keyframes keyFloat {

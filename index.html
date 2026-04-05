@@ -236,22 +236,26 @@
 
     <!-- СПИСОК ВЕРСИЙ (самая новая - вверху) -->
     <div class="versions-list">
-        <!-- 1. НОВАЯ версия ver2 Elo (эло + кейсы) -->
+        <!-- 1. САМАЯ НОВАЯ: ver2 NewCases (новые кейсы) -->
         <div class="version-row">
-            <a href="https://efatcat.github.io/kolblocks/ver2/elo" class="version-link" target="_blank" rel="noopener noreferrer">
-                ⚡ ver2 Elo (эло + кейсы) 
+            <a href="https://efatcat.github.io/kolblocks/ver2/newcases" class="version-link" target="_blank" rel="noopener noreferrer">
+                🎁 ver2 NewCases (новые кейсы) 
                 <span class="badge-new">новое</span>
             </a>
         </div>
-        <!-- 2. ver2 (новые функции) -->
+        <!-- 2. ver2 Elo (эло + кейсы) -->
+        <div class="version-row">
+            <a href="https://efatcat.github.io/kolblocks/ver2/elo" class="version-link" target="_blank" rel="noopener noreferrer">⚡ ver2 Elo (эло + кейсы)</a>
+        </div>
+        <!-- 3. ver2 (новые функции) -->
         <div class="version-row">
             <a href="https://efatcat.github.io/kolblocks/ver2" class="version-link" target="_blank" rel="noopener noreferrer">✨ ver2 (новые функции)</a>
         </div>
-        <!-- 3. ver1 (выпуск Колблокса) -->
+        <!-- 4. ver1 (выпуск Колблокса) -->
         <div class="version-row">
             <a href="https://efatcat.github.io/kolblocks/ver1" class="version-link" target="_blank" rel="noopener noreferrer">📦 ver1 (выпуск Колблокса)</a>
         </div>
-        <!-- 4. ver1 Lite (оптимально для слабых компьютеров) -->
+        <!-- 5. ver1 Lite (оптимально для слабых компьютеров) -->
         <div class="version-row">
             <a href="https://efatcat.github.io/kolblocks/ver1/lite" class="version-link" target="_blank" rel="noopener noreferrer">⚡ ver1 Lite (оптимально для слабых компьютеров)</a>
         </div>
@@ -288,6 +292,7 @@
         // убедимся, что все ссылки ведут туда, куда нужно (дополнительная страховка)
         const rows = document.querySelectorAll('.version-row .version-link');
         const expectedHrefs = [
+            'https://efatcat.github.io/kolblocks/ver2/newcases',
             'https://efatcat.github.io/kolblocks/ver2/elo',
             'https://efatcat.github.io/kolblocks/ver2',
             'https://efatcat.github.io/kolblocks/ver1',
@@ -309,7 +314,7 @@
             vkLink.setAttribute('href', 'https://vk.com/club237311687');
         }
         
-        console.log('Kolblocks — шрифт Unbounded подключен, добавлена версия ver2 Elo');
+        console.log('Kolblocks — добавлена новая версия ver2 NewCases (новые кейсы) в самый верх списка');
     })();
 </script>
 </body>

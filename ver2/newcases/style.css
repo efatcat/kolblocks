@@ -778,23 +778,28 @@ button:disabled {
     margin-bottom: 15px;
 }
 
+/* Анимации для ауры "Но батидао" */
+@keyframes batidaoAura {
+    0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+    100% { transform: scale(1.8) rotate(360deg); opacity: 0; }
+}
+
+@keyframes particleExplode {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0) translateY(-80px); opacity: 0; }
+}
+
+@keyframes auraExpand {
+    0% { transform: scale(0); opacity: 0.8; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
 .aura-effect {
     position: fixed;
     pointer-events: none;
     border-radius: 50%;
-    animation: auraExpand 0.8s ease-out forwards;
     z-index: 50;
-}
-
-@keyframes auraExpand {
-    0% {
-        transform: scale(0);
-        opacity: 0.8;
-    }
-    100% {
-        transform: scale(3);
-        opacity: 0;
-    }
 }
 
 @media (max-width: 768px) {

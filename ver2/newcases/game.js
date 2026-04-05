@@ -34,11 +34,11 @@ const AURA_SKINS = [
 // Фигуры
 const SHAPES_SKINS = [
     { id: 'circle', name: '⚪ Шар', color: '#e74c3c', shape: 'circle', rotationSpeed: 0.02, chance: 25 },
-    { id: 'triangle', name: '🔺 Треугольник', color: '#f39c12', shape: 'triangle', rotationSpeed: 0.03, chance: 25 },
+    { id: 'triangle', name: '🔺 Треугольник', color: '#f39c12', shape: 'triangle', rotationSpeed: 0.03, chance: 20 },
     { id: 'diamond', name: '🔷 Ромб', color: '#1abc9c', shape: 'diamond', rotationSpeed: 0.025, chance: 20 },
     { id: 'star', name: '⭐ Звезда', color: '#f1c40f', shape: 'star', rotationSpeed: 0.04, chance: 15 },
     { id: 'hexagon', name: '⬡ Шестиугольник', color: '#9b59b6', shape: 'hexagon', rotationSpeed: 0.015, chance: 10 },
-    { id: 'octopus', name: '🐙 Осьминог', color: '#e67e22', shape: 'octopus', rotationSpeed: 0.05, chance: 5 }
+    { id: 'octopus', name: '🐙 Осьминог', color: '#e67e22', shape: 'octopus', rotationSpeed: 0.05, chance: 10 }
 ];
 
 // Украшенные кубы (детализированные)

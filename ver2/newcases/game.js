@@ -31,7 +31,7 @@ const AURA_SKINS = [
     { id: 'batidao_aura', name: 'Но батидао', color: '#ff0000', effectColor: 'rgba(255, 0, 0, 0.8)', chance: 1, image: 'https://images.genius.com/3849b06fe11fa1c89ba96465b298457c.1000x1000x1.png' }
 ];
 
-// Фигуры (новый кейс)
+// Фигуры
 const SHAPES_SKINS = [
     { id: 'circle', name: '⚪ Шар', color: '#e74c3c', shape: 'circle', rotationSpeed: 0.02, chance: 25 },
     { id: 'triangle', name: '🔺 Треугольник', color: '#f39c12', shape: 'triangle', rotationSpeed: 0.03, chance: 25 },
@@ -41,24 +41,24 @@ const SHAPES_SKINS = [
     { id: 'octopus', name: '🐙 Осьминог', color: '#e67e22', shape: 'octopus', rotationSpeed: 0.05, chance: 5 }
 ];
 
-// Украшенные кубы (новый кейс)
+// Украшенные кубы (детализированные)
 const DECO_SKINS = [
-    { id: 'neon_cube', name: '💚 Неоновый куб', color: '#00ff00', pattern: 'neon', chance: 25 },
-    { id: 'crystal_cube', name: '💎 Кристальный куб', color: '#00ffff', pattern: 'crystal', chance: 20 },
-    { id: 'gold_cube', name: '👑 Золотой куб', color: '#ffd700', pattern: 'gold', chance: 15 },
-    { id: 'rainbow_cube', name: '🌈 Радужный куб', color: '#ff00ff', pattern: 'rainbow', chance: 15 },
-    { id: 'tech_cube', name: '🖥️ Техно-куб', color: '#00ffcc', pattern: 'tech', chance: 15 },
-    { id: 'void_cube', name: '🌌 Космический куб', color: '#8e44ad', pattern: 'void', chance: 10 }
+    { id: 'neon_cube', name: '💚 Неоновый куб', color: '#00ff00', pattern: 'neon', particleColor: '#00ff88', chance: 25 },
+    { id: 'crystal_cube', name: '💎 Кристальный куб', color: '#00ffff', pattern: 'crystal', particleColor: '#00ccff', chance: 20 },
+    { id: 'gold_cube', name: '👑 Золотой куб', color: '#ffd700', pattern: 'gold', particleColor: '#ffaa00', chance: 15 },
+    { id: 'rainbow_cube', name: '🌈 Радужный куб', color: '#ff00ff', pattern: 'rainbow', particleColor: '#ff69b4', chance: 15 },
+    { id: 'tech_cube', name: '🖥️ Техно-куб', color: '#00ffcc', pattern: 'tech', particleColor: '#00ffff', chance: 15 },
+    { id: 'void_cube', name: '🌌 Космический куб', color: '#8e44ad', pattern: 'void', particleColor: '#9b59b6', chance: 10 }
 ];
 
-// Элементальные (новый кейс)
+// Элементальные (детализированные)
 const ELEMENTAL_SKINS = [
-    { id: 'fire_skin', name: '🔥 Огненный', color: '#ff4500', effect: 'fire', particleColor: '#ff6600', chance: 25 },
-    { id: 'water_skin', name: '💧 Водный', color: '#3498db', effect: 'water', particleColor: '#00ccff', chance: 25 },
-    { id: 'earth_skin', name: '🌍 Земляной', color: '#8B4513', effect: 'earth', particleColor: '#6d4c41', chance: 20 },
-    { id: 'air_skin', name: '💨 Воздушный', color: '#ecf0f1', effect: 'air', particleColor: '#bdc3c7', chance: 20 },
-    { id: 'lightning_skin', name: '⚡ Молниеносный', color: '#ffff00', effect: 'lightning', particleColor: '#ffee00', chance: 9 },
-    { id: 'shadow_skin', name: '🌑 Теневой', color: '#2c3e50', effect: 'shadow', particleColor: '#1a1a2e', chance: 1 }
+    { id: 'fire_skin', name: '🔥 Огненный', color: '#ff4500', effect: 'fire', particleColor: '#ff6600', pattern: 'flame', chance: 25 },
+    { id: 'water_skin', name: '💧 Водный', color: '#3498db', effect: 'water', particleColor: '#00ccff', pattern: 'wave', chance: 25 },
+    { id: 'earth_skin', name: '🌍 Земляной', color: '#8B4513', effect: 'earth', particleColor: '#6d4c41', pattern: 'stone', chance: 20 },
+    { id: 'air_skin', name: '💨 Воздушный', color: '#ecf0f1', effect: 'air', particleColor: '#bdc3c7', pattern: 'cloud', chance: 20 },
+    { id: 'lightning_skin', name: '⚡ Молниеносный', color: '#ffff00', effect: 'lightning', particleColor: '#ffee00', pattern: 'bolt', chance: 9 },
+    { id: 'shadow_skin', name: '🌑 Теневой', color: '#2c3e50', effect: 'shadow', particleColor: '#1a1a2e', pattern: 'shadow', chance: 1 }
 ];
 
 // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
@@ -74,7 +74,6 @@ let equippedAura = localStorage.getItem('kolblocks_equipped_aura') || null;
 let roundCoins = 0, roundDamage = 0;
 
 let batidaoImage = null;
-let activeAuraEffect = null;
 let skinRotations = {};
 
 // ==================== АУДИО ====================
@@ -398,11 +397,44 @@ function showAuraEffect(x, y, aura) {
     effect.style.top = (y - 150) + 'px';
     effect.style.width = '300px';
     effect.style.height = '300px';
-    effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
-    effect.style.boxShadow = `0 0 40px ${aura.color}`;
     effect.style.position = 'fixed';
     effect.style.pointerEvents = 'none';
     effect.style.zIndex = '200';
+    effect.style.borderRadius = '50%';
+    
+    if (aura.id === 'batidao_aura' && batidaoImage) {
+        effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
+        effect.style.backgroundImage = `url(${batidaoImage.src})`;
+        effect.style.backgroundSize = 'cover';
+        effect.style.backgroundPosition = 'center';
+        effect.style.backgroundBlend = 'overlay';
+        effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
+        effect.style.animation = 'batidaoAura 0.6s ease-out forwards';
+        
+        for (let i = 0; i < 40; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 250) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 250) + 'px';
+                particle.style.width = (Math.random() * 10 + 5) + 'px';
+                particle.style.height = (Math.random() * 10 + 5) + 'px';
+                particle.style.background = `#ff${Math.floor(Math.random() * 55 + 200).toString(16)}00`;
+                particle.style.borderRadius = '50%';
+                particle.style.boxShadow = `0 0 15px ${aura.color}`;
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '199';
+                particle.style.animation = 'particleExplode 0.6s ease-out forwards';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 600);
+            }, i * 8);
+        }
+    } else {
+        effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
+        effect.style.boxShadow = `0 0 40px ${aura.color}`;
+        effect.style.animation = 'auraExpand 0.5s ease-out forwards';
+    }
+    
     document.body.appendChild(effect);
     setTimeout(() => effect.remove(), 500);
 }
@@ -541,11 +573,13 @@ class Player {
         const centerX = drawX + this.width/2;
         const centerY = drawY + this.height/2;
         
-        // Рисуем следы
-        for (let i = 0; i < this.trail.length; i++) { 
-            ctx.globalAlpha = i / this.trail.length * 0.25; 
-            ctx.fillStyle = this.isDashing ? '#FFDE7D' : skin.color; 
-            ctx.fillRect(this.trail[i].x - cameraX, this.trail[i].y, this.width, this.height); 
+        // Рисуем следы ТОЛЬКО для квадратных скинов (не для фигур)
+        if (!skin.shape || skin.shape === 'square') {
+            for (let i = 0; i < this.trail.length; i++) { 
+                ctx.globalAlpha = i / this.trail.length * 0.25; 
+                ctx.fillStyle = this.isDashing ? '#FFDE7D' : skin.color; 
+                ctx.fillRect(this.trail[i].x - cameraX, this.trail[i].y, this.width, this.height); 
+            }
         }
         ctx.globalAlpha = 1;
         
@@ -608,7 +642,7 @@ class Player {
             }
             ctx.restore();
         } else {
-            // Обычный куб
+            // Обычный куб или деко/элементальный
             ctx.fillStyle = skin.color;
             if (this.isDashing) {
                 ctx.shadowColor = skin.color;
@@ -616,53 +650,177 @@ class Player {
             }
             ctx.fillRect(drawX, drawY, this.width, this.height);
             
-            // Узоры для деко-скинов
+            // ДЕТАЛИЗИРОВАННЫЕ УЗОРЫ ДЛЯ ДЕКО-СКИНОВ
             if (skin.pattern) {
-                ctx.globalAlpha = 0.6;
-                ctx.fillStyle = '#ffffff';
+                ctx.save();
+                ctx.globalAlpha = 0.7;
+                ctx.shadowBlur = 0;
+                
                 switch(skin.pattern) {
                     case 'neon':
-                        for(let i = 0; i < 3; i++) {
-                            ctx.fillRect(drawX + 5 + i*15, drawY + 5, 3, this.height - 10);
+                        const pulse = Math.sin(Date.now() / 200) * 0.3 + 0.7;
+                        for(let i = 0; i < 4; i++) {
+                            ctx.fillStyle = `rgba(0, 255, 136, ${pulse})`;
+                            ctx.fillRect(drawX + 5 + i*10, drawY + 5, 3, this.height - 10);
+                            ctx.fillStyle = `rgba(0, 255, 255, ${pulse * 0.5})`;
+                            ctx.fillRect(drawX + 6 + i*10, drawY + 8, 1, this.height - 16);
                         }
                         break;
+                        
                     case 'crystal':
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
                         ctx.beginPath();
                         ctx.moveTo(drawX + this.width/2, drawY);
-                        ctx.lineTo(drawX + this.width, drawY + this.height/2);
+                        ctx.lineTo(drawX + this.width - 8, drawY + this.height/2);
                         ctx.lineTo(drawX + this.width/2, drawY + this.height);
-                        ctx.lineTo(drawX, drawY + this.height/2);
+                        ctx.lineTo(drawX + 8, drawY + this.height/2);
                         ctx.closePath();
                         ctx.fill();
+                        ctx.fillStyle = 'rgba(0, 200, 255, 0.5)';
+                        for(let i = 0; i < 3; i++) {
+                            ctx.fillRect(drawX + 10 + i*10, drawY + 15, 2, this.height - 30);
+                        }
                         break;
+                        
                     case 'gold':
                         ctx.fillStyle = '#ffd700';
                         for(let i = 0; i < 4; i++) {
-                            ctx.fillRect(drawX + 4 + i*10, drawY + 4, 2, this.height - 8);
+                            ctx.fillRect(drawX + 5 + i*10, drawY + 5, 2, 8);
+                            ctx.fillRect(drawX + 5 + i*10, drawY + this.height - 13, 2, 8);
+                        }
+                        ctx.fillStyle = '#ffaa00';
+                        for(let i = 0; i < 3; i++) {
+                            ctx.fillRect(drawX + 8 + i*12, drawY + this.height/2 - 3, 3, 6);
                         }
                         break;
+                        
                     case 'rainbow':
-                        const colors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff'];
-                        for(let i = 0; i < 6; i++) {
-                            ctx.fillStyle = colors[i];
-                            ctx.fillRect(drawX + i*7, drawY, 7, this.height);
+                        const rainbowColors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
+                        for(let i = 0; i < rainbowColors.length; i++) {
+                            ctx.fillStyle = rainbowColors[i];
+                            ctx.fillRect(drawX + 3 + i*6, drawY + 5, 5, this.height - 10);
+                        }
+                        ctx.fillStyle = '#ffffff';
+                        for(let i = 0; i < 12; i++) {
+                            ctx.fillRect(drawX + 5 + i*4, drawY + 12, 1, 1);
+                            ctx.fillRect(drawX + 8 + i*3, drawY + 25, 1, 1);
                         }
                         break;
+                        
                     case 'tech':
                         ctx.fillStyle = '#00ffcc';
                         for(let i = 0; i < 4; i++) {
                             ctx.fillRect(drawX + 5 + i*10, drawY + 8, 2, 8);
                             ctx.fillRect(drawX + 5 + i*10, drawY + 24, 2, 8);
                         }
+                        ctx.fillStyle = '#00ccaa';
+                        for(let i = 0; i < 3; i++) {
+                            ctx.fillRect(drawX + 8 + i*12, drawY + this.height/2 - 2, 4, 4);
+                        }
+                        ctx.beginPath();
+                        ctx.moveTo(drawX + 5, drawY + 5);
+                        ctx.lineTo(drawX + this.width - 5, drawY + this.height - 5);
+                        ctx.lineTo(drawX + this.width - 5, drawY + 5);
+                        ctx.lineTo(drawX + 5, drawY + this.height - 5);
+                        ctx.strokeStyle = '#00ffcc';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
                         break;
+                        
                     case 'void':
-                        ctx.fillStyle = '#2c3e50';
-                        for(let i = 0; i < 30; i++) {
-                            ctx.fillRect(drawX + Math.random() * this.width, drawY + Math.random() * this.height, 2, 2);
+                        ctx.fillStyle = '#ffffff';
+                        for(let i = 0; i < 40; i++) {
+                            ctx.fillRect(drawX + 4 + Math.random() * (this.width - 8), drawY + 4 + Math.random() * (this.height - 8), 1, 1);
+                        }
+                        ctx.fillStyle = '#9b59b6';
+                        ctx.beginPath();
+                        ctx.arc(drawX + this.width/2, drawY + this.height/2, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.arc(drawX + this.width/2 - 3, drawY + this.height/2 - 2, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'flame':
+                        const flameOffset = Math.sin(Date.now() / 100) * 2;
+                        ctx.fillStyle = '#ff8800';
+                        for(let i = 0; i < 5; i++) {
+                            ctx.beginPath();
+                            ctx.moveTo(drawX + 8 + i*8, drawY + this.height - 8);
+                            ctx.quadraticCurveTo(drawX + 10 + i*8, drawY + this.height - 15 + flameOffset, drawX + 12 + i*8, drawY + this.height - 8);
+                            ctx.fill();
+                        }
+                        ctx.fillStyle = '#ff4400';
+                        for(let i = 0; i < 3; i++) {
+                            ctx.fillRect(drawX + 10 + i*12, drawY + 8, 4, 8);
                         }
                         break;
+                        
+                    case 'wave':
+                        ctx.fillStyle = '#00ccff';
+                        for(let i = 0; i < 3; i++) {
+                            ctx.beginPath();
+                            ctx.moveTo(drawX + 5 + i*15, drawY + this.height/2);
+                            ctx.quadraticCurveTo(drawX + 12 + i*15, drawY + this.height/2 - 6, drawX + 19 + i*15, drawY + this.height/2);
+                            ctx.lineTo(drawX + 19 + i*15, drawY + this.height/2 + 4);
+                            ctx.quadraticCurveTo(drawX + 12 + i*15, drawY + this.height/2 - 2, drawX + 5 + i*15, drawY + this.height/2 + 4);
+                            ctx.fill();
+                        }
+                        break;
+                        
+                    case 'stone':
+                        ctx.fillStyle = '#6d4c41';
+                        for(let i = 0; i < 20; i++) {
+                            ctx.fillRect(drawX + 5 + Math.random() * (this.width - 10), drawY + 5 + Math.random() * (this.height - 10), 3, 3);
+                        }
+                        ctx.fillStyle = '#5d4037';
+                        for(let i = 0; i < 10; i++) {
+                            ctx.fillRect(drawX + 8 + Math.random() * (this.width - 16), drawY + 10 + Math.random() * (this.height - 20), 2, 2);
+                        }
+                        break;
+                        
+                    case 'cloud':
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.beginPath();
+                        ctx.arc(drawX + 10, drawY + this.height/2, 8, 0, Math.PI * 2);
+                        ctx.arc(drawX + 20, drawY + this.height/2 - 4, 6, 0, Math.PI * 2);
+                        ctx.arc(drawX + 30, drawY + this.height/2, 7, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'bolt':
+                        ctx.fillStyle = '#ffff00';
+                        ctx.beginPath();
+                        ctx.moveTo(drawX + 15, drawY + 8);
+                        ctx.lineTo(drawX + 10, drawY + 20);
+                        ctx.lineTo(drawX + 18, drawY + 18);
+                        ctx.lineTo(drawX + 14, drawY + 32);
+                        ctx.lineTo(drawX + 22, drawY + 18);
+                        ctx.lineTo(drawX + 18, drawY + 18);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.moveTo(drawX + this.width - 15, drawY + 8);
+                        ctx.lineTo(drawX + this.width - 10, drawY + 20);
+                        ctx.lineTo(drawX + this.width - 18, drawY + 18);
+                        ctx.lineTo(drawX + this.width - 14, drawY + 32);
+                        ctx.lineTo(drawX + this.width - 22, drawY + 18);
+                        ctx.lineTo(drawX + this.width - 18, drawY + 18);
+                        ctx.fill();
+                        break;
+                        
+                    case 'shadow':
+                        ctx.fillStyle = '#1a1a2e';
+                        for(let i = 0; i < 30; i++) {
+                            ctx.fillRect(drawX + 4 + Math.random() * (this.width - 8), drawY + 4 + Math.random() * (this.height - 8), 2, 2);
+                        }
+                        ctx.fillStyle = '#2c3e50';
+                        ctx.beginPath();
+                        ctx.arc(drawX + this.width/2, drawY + this.height/2, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
                 }
-                ctx.globalAlpha = 1;
+                ctx.restore();
             }
         }
         

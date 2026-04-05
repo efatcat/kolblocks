@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Kolblocks — версии игры</title>
+    <!-- ПОДКЛЮЧЕНИЕ ШРИФТА UNBOUNDED -->
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- ФАВИКОН (иконка во вкладке браузера) -->
     <link rel="icon" href="https://sun9-39.userapi.com/s/v1/ig2/CBiPFP8Y5S72VS0NbgcLRL-FTqxvA3RtJbH2yhCJqCGvKsiilkf2Gm3_CwXAEDvlxvvdKqq9SUbuehSlxhb1GU87.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x359,480x479,540x539,599x598&from=bu&cs=599x0" type="image/jpeg">
     <style>
@@ -15,7 +17,7 @@
 
         body {
             background: #eef2f5;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: 'Unbounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.5;
             padding: 2rem 1rem;
             color: #1a2a32;
@@ -53,6 +55,7 @@
             letter-spacing: -0.3px;
             color: #0f2b36;
             margin: 0;
+            font-family: 'Unbounded', sans-serif;
         }
 
         .sub {
@@ -61,7 +64,8 @@
             padding-left: 0.75rem;
             margin-bottom: 1.8rem;
             margin-top: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 300;
         }
 
         .versions-list {
@@ -78,11 +82,12 @@
             background: #f8fafc;
             border-left: 4px solid #bdd3e0;
             text-decoration: none;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 500;
             color: #1f5063;
             transition: all 0.1s ease;
             border-bottom: 1px solid #e2edf2;
+            font-family: 'Unbounded', sans-serif;
         }
 
         .version-link:hover {
@@ -94,23 +99,25 @@
         /* бейдж для самой новой версии — легкий акцент */
         .badge-new {
             background: #d4e3ed;
-            font-size: 0.7rem;
-            font-weight: normal;
+            font-size: 0.65rem;
+            font-weight: 400;
             padding: 0.2rem 0.5rem;
             border-radius: 20px;
             margin-left: 0.6rem;
             color: #1f5e6e;
             vertical-align: middle;
+            font-family: 'Unbounded', sans-serif;
         }
 
         .link-note {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #6c8b9a;
             margin: 0.75rem 0 1.2rem 0;
             background: #f4f9fd;
             padding: 0.4rem 0.8rem;
             display: inline-block;
             border-radius: 20px;
+            font-weight: 300;
         }
 
         hr {
@@ -123,13 +130,14 @@
             margin-top: 0.5rem;
         }
         .vk-updates-area h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 500;
             margin-bottom: 0.75rem;
             color: #1c4e5e;
             display: flex;
             align-items: center;
             gap: 8px;
+            font-family: 'Unbounded', sans-serif;
         }
         .vk-link-card {
             background: #f8fafc;
@@ -143,7 +151,7 @@
             border-color: #c2d6e0;
         }
         .vk-link-card a {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 500;
             text-decoration: none;
             color: #1f5063;
@@ -152,21 +160,23 @@
             gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
+            font-family: 'Unbounded', sans-serif;
         }
         .vk-link-card a:hover {
             color: #0a3b48;
             text-decoration: underline;
         }
         .vk-icon {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
         }
         .vk-hint {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #6f8d9c;
             margin-top: 0.8rem;
             background: none;
             padding-left: 0.2rem;
             text-align: center;
+            font-weight: 300;
         }
 
         @media (max-width: 550px) {
@@ -174,11 +184,11 @@
                 padding: 1.2rem;
             }
             .version-link {
-                font-size: 1rem;
+                font-size: 0.85rem;
                 padding: 0.7rem 0.9rem;
             }
             h1 {
-                font-size: 1.7rem;
+                font-size: 1.5rem;
             }
             .site-logo {
                 width: 44px;
@@ -188,8 +198,14 @@
                 gap: 10px;
             }
             .badge-new {
-                font-size: 0.6rem;
+                font-size: 0.55rem;
                 margin-left: 0.4rem;
+            }
+            .vk-updates-area h2 {
+                font-size: 1rem;
+            }
+            .vk-link-card a {
+                font-size: 0.85rem;
             }
         }
 
@@ -198,11 +214,13 @@
         }
         footer {
             margin-top: 2rem;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-align: center;
             color: #8aa6b5;
             border-top: 1px solid #e2edf2;
             padding-top: 1rem;
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 300;
         }
     </style>
 </head>
@@ -291,8 +309,7 @@
             vkLink.setAttribute('href', 'https://vk.com/club237311687');
         }
         
-        // небольшой лог для информации
-        console.log('Kolblocks — добавлена новая версия ver2 Elo (эло + кейсы) в самый верх списка');
+        console.log('Kolblocks — шрифт Unbounded подключен, добавлена версия ver2 Elo');
     })();
 </script>
 </body>

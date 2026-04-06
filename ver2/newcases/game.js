@@ -601,23 +601,27 @@ class Player {
     createHitEffect(x, y) { for (let i = 0; i < 15; i++) particlePool.acquire(x + (Math.random() - 0.5) * 20, y + (Math.random() - 0.5) * 20, '#ff5500'); }
     createJumpParticles() { for (let i = 0; i < 12; i++) particlePool.acquire(this.x + this.width / 2, this.y + this.height, this.color); }
     createLandParticles() { for (let i = 0; i < 8; i++) particlePool.acquire(this.x + this.width / 2, this.y + this.height, '#08D9D6'); }
-    checkPlatformCollisions() {
+        checkPlatformCollisions() {
         let onGround = false;
         for (let p of platforms) {
-            // Проверяем, был ли игрок НАД платформой в прошлом кадре
-            const wasAbove = this.prevY + this.height <= p.y + 5;
-            const isAbove = this.y + this.height <= p.y + 10;
-            const horizontalOverlap = this.x + this.width > p.x + 5 && this.x < p.x + p.width - 5;
-            
-            if (horizontalOverlap && wasAbove && isAbove && this.velY >= 0) {
-                this.y = p.y - this.height; this.velY = 0;
-                if (this.jumping) { this.createLandParticles(); this.jumping = false; }
-                this.jumpCount = 0; onGround = true;
-                if (p.type === 'breaking' && !p.broken) p.breakTimer = 60;
-            } 
-            // Страховка на случай "застревания"
-            else if (horizontalOverlap && this.y < p.y + p.height && this.y + this.height > p.y && this.velY > 0) {
-                this.y = p.y - this.height; this.velY = 0; this.jumpCount = 0; onGround = true;
+            // 1. Проверка горизонтального пересечения
+            const horizontalOverlap = this.x + this.width > p.x + 4 && this.x < p.x + p.width - 4;
+            if (!horizontalOverlap) continue;
+
+            // 2. Коллизия проверяется ТОЛЬКО при падении вниз (не при прыжке вверх!)
+            if (this.velY >= 0) {
+                // 3. Был ли игрок над платформой в начале кадра (до применения скорости)
+                const wasAbove = (this.y + this.height - this.velY) <= p.y + 8;
+                // 4. Касается ли он платформы сейчас
+                const isTouching = this.y + this.height >= p.y;
+
+                if (wasAbove && isTouching) {
+                    this.y = p.y - this.height;
+                    this.velY = 0;
+                    if (this.jumping) { this.createLandParticles(); this.jumping = false; }
+                    this.jumpCount = 0; onGround = true;
+                    if (p.type === 'breaking' && !p.broken) p.breakTimer = 60;
+                }
             }
         }
         if (onGround) this.jumpCount = 0;

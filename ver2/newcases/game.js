@@ -1598,6 +1598,12 @@ function gameLoop() {
 }
 
 // ==================== ОСТАЛЬНЫЕ ИГРОВЫЕ ФУНКЦИИ ====================
+function updateCamera() {
+    const targetX = player.x - canvas.width * CONFIG.camera.playerOffset;
+    cameraX += (targetX - cameraX) * CONFIG.camera.followSpeed;
+    cameraX = Math.max(0, Math.min(cameraX, levelWidth - canvas.width));
+}
+
 function updateCoins() {
     for (let i = coins.length - 1; i >= 0; i--) {
         const c = coins[i];

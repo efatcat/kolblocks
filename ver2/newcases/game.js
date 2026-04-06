@@ -352,43 +352,41 @@ function calculateEloChange() {
     playerELO = Math.max(0, playerELO + ch); saveAllData(); return { change: ch };
 }
 
-// ==================== МАГАЗИН (ИСПРАВЛЕННЫЕ ФУНКЦИИ) ====================
+// ==================== МАГАЗИН ====================
+function getSkinData(id) { return CHEST_SKINS.find(s => s.id === id) || { id: 'default', name: 'Стандарт', color: '#4af626', type: 'cube' }; }
+function getAuraData(id) { return AURA_SKINS.find(a => a.id === id) || null; }
+function saveAllData() {
+    localStorage.setItem('kolblocks_elo', playerELO);
+    localStorage.setItem('kolblocks_keys', totalKeys);
+    localStorage.setItem('kolblocks_skins', JSON.stringify(unlockedSkins));
+    localStorage.setItem('kolblocks_auras', JSON.stringify(unlockedAuras));
+    localStorage.setItem('kolblocks_classes', JSON.stringify(unlockedClasses));
+    localStorage.setItem('kolblocks_equipped', equippedSkin);
+    localStorage.setItem('kolblocks_equipped_aura', equippedAura || '');
+    localStorage.setItem('kolblocks_equipped_class', equippedClass);
+}
 
+function openShop() {
+    gameRunning = false; document.getElementById('pauseMenu').style.display = 'none';
+    document.getElementById('caseShopScreen').style.display = 'flex';
+    document.getElementById('shopKeyCount').textContent = totalKeys;
+    renderChestTypes(); renderSkins(); renderAuras(); renderClasses();
+}
+function closeShop() { document.getElementById('caseShopScreen').style.display = 'none'; gameRunning = true; if (typeof gameLoop === 'function') gameLoop(); }
 function renderChestTypes() {
     const c = document.getElementById('chestsContainer'); c.innerHTML = '';
     CHEST_TYPES.forEach(ch => {
         const d = document.createElement('div'); d.className = 'chest-card';
-        // 👇 ПЕРЕДАЁМ this (саму кнопку) в функцию
-        d.innerHTML = `<div class="chest ${ch.id}-chest">${ch.icon}</div><p class="chest-name">${ch.name}</p><p class="chest-cost">Цена: ${ch.price} 🔑</p><button onclick="openChestType('${ch.id}', this)" ${totalKeys < ch.price ? 'disabled' : ''}>ОТКРЫТЬ</button>`;
+        d.innerHTML = `<div class="chest ${ch.id}-chest">${ch.icon}</div><p class="chest-name">${ch.name}</p><p class="chest-cost">Цена: ${ch.price} 🔑</p><button onclick="openChestType('${ch.id}')" ${totalKeys < ch.price ? 'disabled' : ''}>ОТКРЫТЬ</button>`;
         c.appendChild(d);
     });
 }
-
-function openChestType(id, btn) {
+function openChestType(id) {
     const ch = CHEST_TYPES.find(c => c.id === id);
     if (!ch || totalKeys < ch.price) { alert('Недостаточно ключей!'); return; }
-
-    // Анимация нажатия
-    btn.disabled = true;
-    btn.textContent = 'Открываю...';
-    AudioSys.chestOpen();
-
-    // Если это кейс аур (логика теперь внутри, без старых ID)
-    if (ch.isAura) {
-        totalKeys -= ch.price; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys;
-        setTimeout(() => {
-            let r = Math.random() * 100, cm = 0, dr = AURA_SKINS[0];
-            for (let a of AURA_SKINS) { cm += a.chance; if (r < cm) { dr = a; break; } }
-            const has = unlockedAuras.includes(dr.id);
-            if (has) { totalKeys += 3; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys; showResult('Дубликат ауры: ' + dr.name, 'Возврат: +3 🔑', '#aaa'); }
-            else { unlockedAuras.push(dr.id); saveAllData(); showResult('Новая аура: ' + dr.name + '!', dr.color); }
-            renderAuras(); renderChestTypes();
-        }, 1200);
-        return;
-    }
-
-    // Обычный кейс
+    if (ch.isAura) { openAuraChest(); return; }
     totalKeys -= ch.price; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys;
+    event.target.disabled = true; AudioSys.chestOpen();
     setTimeout(() => {
         let r = Math.random() * 100, cm = 0, dr = ch.skins[0];
         for (let s of ch.skins) { cm += s.chance; if (r < cm) { dr = s; break; } }
@@ -399,8 +397,8 @@ function openChestType(id, btn) {
         } else {
             unlockedSkins.push(dr.id); saveAllData(); showResult('Новый скин: ' + dr.name + '!', dr.color);
         }
-        renderSkins(); renderChestTypes();
-    }, 1200);
+        event.target.disabled = false; renderSkins(); renderChestTypes();
+    }, 1000);
 }
 function renderSkins() {
     const g = document.getElementById('skinsGrid'); g.innerHTML = '';

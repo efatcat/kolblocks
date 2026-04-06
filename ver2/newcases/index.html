@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kolblocks - платфоремер</title>
+    <title>Kolblocks | ELO & Магазин</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -59,9 +59,10 @@
             <h2>⏸ ПАУЗА</h2>
             <div class="controls-info">
                 <span>← → / A D</span> Движение игрока<br>
-                <span>SPACE / W / ↑</span> Прыжок (двойной!)<br>
+                <span>SPACE / W / ↑</span> Прыжок (двойной/тройной для Разбойника!)<br>
                 <span class="highlight">ЛКМ / V</span> Ближний бой (удар по площади) 💥<br>
-                <span>SHIFT / Q</span> Рывок (2 заряда) ⚡<br>
+                <span>E</span> Стрельба (только для Лучника) 🏹<br>
+                <span>SHIFT / Q</span> Рывок (2-3 заряда) ⚡<br>
                 <span>P / ESC</span> Пауза игры ⏸<br>
                 <span>R</span> Быстрый рестарт 🔄
             </div>
@@ -86,39 +87,34 @@
             </div>
             
             <div class="chests-container">
-                <!-- Обычный кейс -->
                 <div class="chest-card">
                     <div id="chestVisual" class="chest normal-chest">📦</div>
                     <p class="chest-cost">Цена: 10 🔑</p>
                     <button id="openChestBtn" onclick="openChest()">ОТКРЫТЬ</button>
                 </div>
                 
-                <!-- Кейс с аурой -->
                 <div class="chest-card">
                     <div id="auraChestVisual" class="chest aura-chest">✨</div>
                     <p class="chest-cost">Цена: 12 🔑</p>
                     <button id="openAuraChestBtn" onclick="openAuraChest()">ОТКРЫТЬ</button>
                 </div>
 
-                <!-- Кейс: Фигуры -->
                 <div class="chest-card">
                     <div id="shapesChestVisual" class="chest shapes-chest">🔷</div>
                     <p class="chest-cost">Цена: 20 🔑</p>
-                    <button id="openShapesChestBtn" onclick="openShapesChest()">ОТКРЫТЬ</button>
+                    <button id="openShapesChestBtn" onclick="openShapesChest()">ОТКРЫТЬ (ФИГУРЫ)</button>
                 </div>
 
-                <!-- Кейс: Украшенные кубы -->
                 <div class="chest-card">
                     <div id="decoChestVisual" class="chest deco-chest">💎</div>
                     <p class="chest-cost">Цена: 25 🔑</p>
-                    <button id="openDecoChestBtn" onclick="openDecoChest()">ОТКРЫТЬ</button>
+                    <button id="openDecoChestBtn" onclick="openDecoChest()">ОТКРЫТЬ (ДЕКОР)</button>
                 </div>
 
-                <!-- Кейс: Элементальные -->
                 <div class="chest-card">
                     <div id="elementalChestVisual" class="chest elemental-chest">🔥</div>
                     <p class="chest-cost">Цена: 30 🔑</p>
-                    <button id="openElementalChestBtn" onclick="openElementalChest()">ОТКРЫТЬ</button>
+                    <button id="openElementalChestBtn" onclick="openElementalChest()">ОТКРЫТЬ (СТИХИИ)</button>
                 </div>
             </div>
             
@@ -127,6 +123,9 @@
             
             <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши ауры (эффект при ударе):</h3>
             <div id="aurasGrid" class="skins-grid"></div>
+            
+            <h3 style="color:#ccc; margin: 25px 0 15px;">⚔️ КЛАССЫ ПЕРСОНАЖЕЙ:</h3>
+            <div id="classesGrid" class="skins-grid"></div>
             
             <button class="secondary" onclick="closeShop()" style="margin-top:30px">✖ ЗАКРЫТЬ</button>
         </div>

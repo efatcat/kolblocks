@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kolblocks | ELO & Магазин</title>
+    <title>Kolblocks | Классы | Скины | Ауры</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,7 +15,6 @@
 
     <div id="title">KOLBLOCKS</div>
     <div id="eloDisplay">🏆 ELO: <span id="eloValue">0</span></div>
-    <div id="classDisplay" style="position:fixed;top:55px;left:50%;transform:translateX(-50%);color:#08D9D6;font-size:14px;background:rgba(26,26,46,0.8);padding:4px 15px;border-radius:15px;z-index:100;font-family:'Unbounded',monospace">Класс: Новичок</div>
 
     <div id="ui">
         <div class="stat"><span class="stat-label">Уровень:</span><span class="stat-value" id="levelDisplay">1</span></div>
@@ -23,11 +22,12 @@
         <div class="stat"><span class="stat-label">Комбо:</span><span class="stat-value" id="comboCount">x1</span></div>
         <div class="stat"><span class="stat-label">Здоровье:</span></div>
         <div id="healthBar"><div id="healthFill"></div></div>
+        <div class="stat" id="classDisplay"><span class="stat-label">Класс:</span><span class="stat-value" id="className">Воин</span></div>
     </div>
 
     <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
     <div id="comboDisplay">COMBO x<span id="comboValue">1</span></div>
-    <div id="dashIndicator"><div class="dash-dot active"></div><div class="dash-dot"></div></div>
+    <div id="dashIndicator"><div class="dash-dot active"></div><div class="dash-dot"></div><div class="dash-dot"></div></div>
     <div id="checkpointIndicator">✓ Чекпоинт сохранён!</div>
 
     <div id="levelComplete">
@@ -60,10 +60,10 @@
             <h2>⏸ ПАУЗА</h2>
             <div class="controls-info">
                 <span>← → / A D</span> Движение игрока<br>
-                <span>SPACE / W / ↑</span> Прыжок (двойной/тройной!)<br>
-                <span class="highlight">ЛКМ / V</span> Ближний бой 💥<br>
-                <span>SHIFT / Q</span> Рывок ⚡<br>
-                <span class="archer-only" style="color:#27ae60">ЛКМ+удерж. / V</span> Стрельба (Лучник) 🏹<br>
+                <span>SPACE / W / ↑</span> Прыжок (2-3 раза!)<br>
+                <span class="highlight">ЛКМ / V</span> Ближний бой (зависит от класса) 💥<br>
+                <span>E</span> Стрельба (только для лучника) 🏹<br>
+                <span>SHIFT / Q</span> Рывок (заряды от класса) ⚡<br>
                 <span>P / ESC</span> Пауза игры ⏸<br>
                 <span>R</span> Быстрый рестарт 🔄
             </div>
@@ -73,7 +73,7 @@
             </div>
             <div class="pause-buttons">
                 <button onclick="togglePause()">▶ ПРОДОЛЖИТЬ</button>
-                <button onclick="openShop()">🎁 МАГАЗИН</button>
+                <button onclick="openShop()">🎁 МАГАЗИН КЕЙСОВ</button>
                 <button class="secondary" onclick="restartGame()">🔄 ЗАНОВО</button>
                 <button class="secondary" onclick="location.reload()">🏠 В МЕНЮ</button>
             </div>
@@ -82,22 +82,51 @@
 
     <div id="caseShopScreen">
         <div class="shop-content">
-            <h2>🎁 МАГАЗИН</h2>
+            <h2>🎁 МАГАЗИН КЕЙСОВ</h2>
             <div class="shop-header">
                 <span class="key-icon">🔑 Ключи: <span id="shopKeyCount">0</span></span>
             </div>
             
-            <h3 style="color:#ccc;margin:20px 0 10px">Кейсы:</h3>
-            <div id="chestsContainer" class="chests-container"></div>
+            <div class="chests-container">
+                <div class="chest-card">
+                    <div id="chestVisual" class="chest normal-chest">📦</div>
+                    <p class="chest-cost">Цена: 10 🔑</p>
+                    <button id="openChestBtn" onclick="openChest()">ОТКРЫТЬ</button>
+                </div>
+                
+                <div class="chest-card">
+                    <div id="shapeChestVisual" class="chest shape-chest">⚪</div>
+                    <p class="chest-cost">Цена: 15 🔑</p>
+                    <button id="openShapeChestBtn" onclick="openShapeChest()">ФИГУРЫ</button>
+                </div>
+                
+                <div class="chest-card">
+                    <div id="decoratedChestVisual" class="chest decorated-chest">💎</div>
+                    <p class="chest-cost">Цена: 20 🔑</p>
+                    <button id="openDecoratedChestBtn" onclick="openDecoratedChest()">УКРАШЕНИЯ</button>
+                </div>
+                
+                <div class="chest-card">
+                    <div id="auraChestVisual" class="chest aura-chest">✨</div>
+                    <p class="chest-cost">Цена: 12 🔑</p>
+                    <button id="openAuraChestBtn" onclick="openAuraChest()">АУРЫ</button>
+                </div>
+            </div>
             
-            <h3 style="color:#ccc;margin:25px 0 15px">Ваши скины:</h3>
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши классы:</h3>
+            <div id="classesGrid" class="skins-grid"></div>
+            
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Обычные скины:</h3>
             <div id="skinsGrid" class="skins-grid"></div>
             
-            <h3 style="color:#ccc;margin:25px 0 15px">Ауры:</h3>
-            <div id="aurasGrid" class="skins-grid"></div>
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Скины-фигуры:</h3>
+            <div id="shapesGrid" class="skins-grid"></div>
             
-            <h3 style="color:#ccc;margin:25px 0 15px">Классы:</h3>
-            <div id="classesGrid" class="skins-grid"></div>
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Украшенные кубы:</h3>
+            <div id="decoratedGrid" class="skins-grid"></div>
+            
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши ауры (эффект при ударе):</h3>
+            <div id="aurasGrid" class="skins-grid"></div>
             
             <button class="secondary" onclick="closeShop()" style="margin-top:30px">✖ ЗАКРЫТЬ</button>
         </div>
@@ -112,12 +141,12 @@
         <div class="mobile-group">
             <button class="mobile-btn dash" id="btnDash">⇨</button>
             <button class="mobile-btn attack" id="btnAttack">⚔️</button>
-            <button class="mobile-btn shoot" id="btnShoot" style="display:none">🏹</button>
             <button class="mobile-btn jump" id="btnJump">↑</button>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
+
     <script src="game.js"></script>
 </body>
 </html>

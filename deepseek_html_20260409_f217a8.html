@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kolblocks — временное закрытие</title>
+    <!-- Шрифт Unbounded -->
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #ffffff;  /* чистый белый фон */
+            font-family: 'Unbounded', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .message-container {
+            max-width: 700px;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .main-message {
+            font-size: clamp(1.4rem, 6vw, 2.8rem);
+            font-weight: 600;
+            color: #111111;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.5rem;
+            word-break: keep-all;
+        }
+
+        /* лёгкий дополнительный текст для атмосферы (по желанию, но без лишнего) */
+        .sub-message {
+            font-size: 0.85rem;
+            font-weight: 300;
+            color: #5a5a5a;
+            margin-top: 1.2rem;
+            opacity: 0.7;
+            letter-spacing: -0.2px;
+        }
+
+        /* фавикон (по желанию, из прошлых версий) — не мешает, оставим ту же иконку */
+        .favicon-placeholder {
+            display: none;
+        }
+    </style>
+    <!-- фавикон (опционально, чтобы не было ошибки 404, можно оставить или убрать — без разницы) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Crect width='24' height='24' fill='%23333'/%3E%3C/svg%3E">
+</head>
+<body>
+    <div class="message-container">
+        <div class="main-message">
+            Игра закрывается<br>на неопределённое время
+        </div>
+        <div class="sub-message">
+            Kolblocks
+        </div>
+    </div>
+</body>
+</html>

@@ -13,19 +13,19 @@ const CONFIG = {
     combat: { comboDecay: 180 }
 };
 
-// Скины для обычного сундука
+// Скины для обычного сундука (исправлены шансы - сумма = 100%)
 const CHEST_SKINS = [
-    { id: 'copper', name: 'Медный рыцарь', color: '#B87333', chance: 60 },
+    { id: 'copper', name: 'Медный рыцарь', color: '#B87333', chance: 55 },
     { id: 'sapphire', name: 'Сапфировый страж', color: '#0f52ba', chance: 30 },
-    { id: 'magma', name: 'Магмовый голем', color: '#FF4500', chance: 8 },
-    { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 2 }
+    { id: 'magma', name: 'Магмовый голем', color: '#FF4500', chance: 12 },
+    { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 3 }
 ];
 
-// Ауры для кейса
+// Ауры для кейса (исправлены шансы - сумма = 100%)
 const AURA_SKINS = [
-    { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 40 },
+    { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 45 },
     { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 30 },
-    { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 20 },
+    { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 15 },
     { id: 'cosmic_aura', name: 'Космическая аура', color: '#9b59b6', effectColor: 'rgba(155, 89, 182, 0.6)', chance: 9 },
     { id: 'batidao_aura', name: 'Но батидао', color: '#ff0000', effectColor: 'rgba(255, 0, 0, 0.8)', chance: 1, image: 'https://images.genius.com/3849b06fe11fa1c89ba96465b298457c.1000x1000x1.png' }
 ];
@@ -41,6 +41,7 @@ let roundCoins = 0, roundDamage = 0;
 
 let batidaoImage = null;
 let activeAuraEffect = null; // Для отслеживания активного эффекта ауры
+let gameLoopId = null; // ID для requestAnimationFrame
 
 // ==================== АУДИО ====================
 const AudioSys = {
@@ -162,6 +163,7 @@ function saveAllData() {
 
 function openShop() {
     gameRunning = false;
+    if (gameLoopId) cancelAnimationFrame(gameLoopId);
     document.getElementById('pauseMenu').style.display = 'none';
     document.getElementById('caseShopScreen').style.display = 'flex';
     document.getElementById('shopKeyCount').textContent = totalKeys;
@@ -171,8 +173,9 @@ function openShop() {
 
 function closeShop() {
     document.getElementById('caseShopScreen').style.display = 'none';
-    gameRunning = true; 
-    if (typeof gameLoop === 'function') gameLoop();
+    gameRunning = true;
+    if (gameLoopId) cancelAnimationFrame(gameLoopId);
+    gameLoop();
 }
 
 function renderSkins() {
@@ -213,6 +216,7 @@ function equipAura(id) {
     }
 }
 
+// Исправленная функция открытия обычного кейса
 function openChest() {
     if (totalKeys < 10) { alert('Нужно минимум 10 ключей!'); return; }
     totalKeys -= 10; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys;
@@ -220,15 +224,53 @@ function openChest() {
     btn.disabled = true; chest.classList.add('shaking'); AudioSys.chestOpen();
     setTimeout(() => {
         chest.classList.remove('shaking');
-        let roll = Math.random() * 100, cum = 0, drop = CHEST_SKINS[0];
-        for (let s of CHEST_SKINS) { cum += s.chance; if (roll < cum) { drop = s; break; } }
+        
+        // Исправленная логика выпадения скина
+        let roll = Math.random() * 100;
+        let cumulative = 0;
+        let drop = null;
+        
+        for (let s of CHEST_SKINS) {
+            cumulative += s.chance;
+            if (roll < cumulative) {
+                drop = s;
+                break;
+            }
+        }
+        
+        // Защита от undefined
+        if (!drop) drop = CHEST_SKINS[0];
+        
         const has = unlockedSkins.includes(drop.id);
-        if (has) { totalKeys += 2; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys; showResult('Дубликат: ' + drop.name, 'Возврат: +2 🔑', '#aaa'); }
-        else { unlockedSkins.push(drop.id); saveAllData(); showResult('Новый скин: ' + drop.name + '!', drop.color); }
+        
+        // Проверка: если у игрока уже есть все скины, возвращаем ключи
+        const allSkinsUnlocked = CHEST_SKINS.every(skin => unlockedSkins.includes(skin.id));
+        
+        if (allSkinsUnlocked) {
+            // У игрока уже есть все скины - возвращаем ключи
+            totalKeys += 10;
+            saveAllData();
+            document.getElementById('shopKeyCount').textContent = totalKeys;
+            showResult('🎁 Все скины собраны!', 'Возврат: +10 🔑', '#FFDE7D');
+        } else if (has) {
+            // Повторка - возвращаем меньше ключей
+            const refund = 3;
+            totalKeys += refund;
+            saveAllData();
+            document.getElementById('shopKeyCount').textContent = totalKeys;
+            showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            // Новый скин
+            unlockedSkins.push(drop.id);
+            saveAllData();
+            showResult('✨ Новый скин: ' + drop.name + '!', 'Получен ' + drop.name, drop.color);
+        }
+        
         btn.disabled = false; renderSkins();
     }, 1200);
 }
 
+// Исправленная функция открытия кейса с аурой
 function openAuraChest() {
     if (totalKeys < 12) { alert('Нужно минимум 12 🔑 ключей!'); return; }
     totalKeys -= 12; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys;
@@ -236,11 +278,48 @@ function openAuraChest() {
     btn.disabled = true; chest.classList.add('shaking'); AudioSys.chestOpen();
     setTimeout(() => {
         chest.classList.remove('shaking');
-        let roll = Math.random() * 100, cum = 0, drop = AURA_SKINS[0];
-        for (let a of AURA_SKINS) { cum += a.chance; if (roll < cum) { drop = a; break; } }
+        
+        // Исправленная логика выпадения ауры
+        let roll = Math.random() * 100;
+        let cumulative = 0;
+        let drop = null;
+        
+        for (let a of AURA_SKINS) {
+            cumulative += a.chance;
+            if (roll < cumulative) {
+                drop = a;
+                break;
+            }
+        }
+        
+        // Защита от undefined
+        if (!drop) drop = AURA_SKINS[0];
+        
         const has = unlockedAuras.includes(drop.id);
-        if (has) { totalKeys += 3; saveAllData(); document.getElementById('shopKeyCount').textContent = totalKeys; showResult('Дубликат ауры: ' + drop.name, 'Возврат: +3 🔑', '#aaa'); }
-        else { unlockedAuras.push(drop.id); saveAllData(); showResult('Новая аура: ' + drop.name + '!', drop.color); }
+        
+        // Проверка: если у игрока уже есть все ауры
+        const allAurasUnlocked = AURA_SKINS.every(aura => unlockedAuras.includes(aura.id));
+        
+        if (allAurasUnlocked) {
+            // У игрока уже есть все ауры - возвращаем ключи
+            totalKeys += 12;
+            saveAllData();
+            document.getElementById('shopKeyCount').textContent = totalKeys;
+            showResult('🎁 Все ауры собраны!', 'Возврат: +12 🔑', '#FFDE7D');
+        } else if (has) {
+            // Повторка - возвращаем меньше ключей
+            const refund = 4;
+            totalKeys += refund;
+            saveAllData();
+            document.getElementById('shopKeyCount').textContent = totalKeys;
+            showResult('🔄 Повторка ауры: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            // Новая аура
+            unlockedAuras.push(drop.id);
+            saveAllData();
+            showResult('✨ Новая аура: ' + drop.name + '!', 'Теперь при ударе будет эффект!', drop.color);
+        }
+        
         btn.disabled = false; renderAuras();
     }, 1200);
 }
@@ -248,7 +327,7 @@ function openAuraChest() {
 function showResult(title, text, col) {
     const r = document.getElementById('chestResult');
     document.getElementById('resultTitle').textContent = title; document.getElementById('resultText').textContent = text;
-    if (col) r.querySelector('h3').style.color = col;
+    if (col && r.querySelector('h3')) r.querySelector('h3').style.color = col;
     r.style.display = 'block';
 }
 
@@ -605,28 +684,126 @@ function drawKeys(){for(const k of levelKeys){if(k.collected)continue;k.floatOff
 function drawPowerUps(){for(const p of powerUps){ctx.fillStyle=p.color;ctx.beginPath();if(p.type==='health'){ctx.moveTo(p.x-cameraX,p.y+p.size/2);ctx.bezierCurveTo(p.x-cameraX,p.y,p.x-cameraX-p.size,p.y,p.x-cameraX-p.size,p.y+p.size/2);ctx.bezierCurveTo(p.x-cameraX-p.size,p.y+p.size,p.x-cameraX,p.y+p.size*1.5,p.x-cameraX,p.y+p.size*1.5);ctx.bezierCurveTo(p.x-cameraX,p.y+p.size*1.5,p.x-cameraX+p.size,p.y+p.size,p.x-cameraX+p.size,p.y+p.size/2);ctx.bezierCurveTo(p.x-cameraX+p.size,p.y,p.x-cameraX,p.y,p.x-cameraX,p.y+p.size/2);}else{ctx.arc(p.x-cameraX,p.y,p.size,0,Math.PI*2);}ctx.fill();ctx.shadowColor=p.color;ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;}}
 
 // ==================== ОСНОВНОЙ ЦИКЛ ====================
-function gameLoop(){if(!gameRunning)return;player.update(keys);updateCamera();updateCoins();updateKeys();updatePowerUps();decayCombo();checkEnemyCollisions();checkCheckpoints();if(boss)boss.update();if(player.x>levelWidth-100&&(!boss||!boss.active)){completeLevel();return;}if(screenShake>0){screenShake--;ctx.setTransform(1,0,0,1,(Math.random()-0.5)*shakeIntensity,(Math.random()-0.5)*shakeIntensity);}ctx.clearRect(0,0,canvas.width,canvas.height);drawBackground();for(let pf of platforms){pf.update();pf.draw(ctx);}for(let e of enemies){e.update();e.draw(ctx);}for(let e of flyingEnemies){e.update();e.draw(ctx);}if(boss)boss.draw(ctx);drawKeys();drawCoins();drawPowerUps();drawParticles();player.draw(ctx,cameraX);drawGoal();ctx.setTransform(1,0,0,1,0,0);updateDashIndicator();requestAnimationFrame(gameLoop);}
+function gameLoop(){
+    if(!gameRunning) return;
+    player.update(keys);
+    updateCamera();
+    updateCoins();
+    updateKeys();
+    updatePowerUps();
+    decayCombo();
+    checkEnemyCollisions();
+    checkCheckpoints();
+    if(boss) boss.update();
+    if(player.x>levelWidth-100&&(!boss||!boss.active)){
+        completeLevel();
+        return;
+    }
+    if(screenShake>0){
+        screenShake--;
+        ctx.setTransform(1,0,0,1,(Math.random()-0.5)*shakeIntensity,(Math.random()-0.5)*shakeIntensity);
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawBackground();
+    for(let pf of platforms){
+        pf.update();
+        pf.draw(ctx);
+    }
+    for(let e of enemies){
+        e.update();
+        e.draw(ctx);
+    }
+    for(let e of flyingEnemies){
+        e.update();
+        e.draw(ctx);
+    }
+    if(boss) boss.draw(ctx);
+    drawKeys();
+    drawCoins();
+    drawPowerUps();
+    drawParticles();
+    player.draw(ctx,cameraX);
+    drawGoal();
+    ctx.setTransform(1,0,0,1,0,0);
+    updateDashIndicator();
+    gameLoopId = requestAnimationFrame(gameLoop);
+}
 
-function completeLevel(){gameRunning=false;AudioSys.levelComplete();addScore(1000*currentLevel);const eloResult = calculateEloChange();document.getElementById('levelScore').textContent=Math.floor(1000*currentLevel*comboMultiplier);document.getElementById('maxCombo').textContent=`x${maxCombo}`;document.getElementById('coinsCollected').textContent = roundCoins;document.getElementById('damageTaken').textContent = roundDamage;const eloChangeEl = document.getElementById('eloChangeDisplay');eloChangeEl.textContent = (eloResult.change >= 0 ? '+' : '') + eloResult.change;eloChangeEl.style.color = eloResult.change >= 0 ? '#4af626' : '#ff2e63';document.getElementById('levelComplete').style.display='flex';showEloChange(eloResult.change);for(let i=0;i<80;i++)particlePool.acquire(player.x+player.width/2,player.y+player.height/2,platformTextures[Math.floor(Math.random()*platformTextures.length)].color);setTimeout(()=>{document.getElementById('levelComplete').style.display='none';currentLevel++;generateLevel(currentLevel);player.reset();playerHealth=maxHealth;updateHealthBar();cameraX=0;comboCount=1;comboMultiplier=1;maxCombo=1;lastCheckpointX=0;updateUI();updateDashIndicator();updateEloDisplay();gameRunning=true;gameLoop();},2500);}
+function completeLevel(){
+    gameRunning=false;
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
+    AudioSys.levelComplete();
+    addScore(1000*currentLevel);
+    const eloResult = calculateEloChange();
+    document.getElementById('levelScore').textContent=Math.floor(1000*currentLevel*comboMultiplier);
+    document.getElementById('maxCombo').textContent=`x${maxCombo}`;
+    document.getElementById('coinsCollected').textContent = roundCoins;
+    document.getElementById('damageTaken').textContent = roundDamage;
+    const eloChangeEl = document.getElementById('eloChangeDisplay');
+    eloChangeEl.textContent = (eloResult.change >= 0 ? '+' : '') + eloResult.change;
+    eloChangeEl.style.color = eloResult.change >= 0 ? '#4af626' : '#ff2e63';
+    document.getElementById('levelComplete').style.display='flex';
+    showEloChange(eloResult.change);
+    for(let i=0;i<80;i++)particlePool.acquire(player.x+player.width/2,player.y+player.height/2,platformTextures[Math.floor(Math.random()*platformTextures.length)].color);
+    setTimeout(()=>{
+        document.getElementById('levelComplete').style.display='none';
+        currentLevel++;
+        generateLevel(currentLevel);
+        player.reset();
+        playerHealth=maxHealth;
+        updateHealthBar();
+        cameraX=0;
+        comboCount=1;
+        comboMultiplier=1;
+        maxCombo=1;
+        lastCheckpointX=0;
+        updateUI();
+        updateDashIndicator();
+        updateEloDisplay();
+        gameRunning=true;
+        gameLoop();
+    },2500);
+}
 
-function gameOver(){gameRunning=false;AudioSys.gameOver();document.getElementById('finalScore').textContent=score;document.getElementById('finalLevel').textContent=currentLevel-1;document.getElementById('finalCombo').textContent=`x${maxCombo}`;document.getElementById('bossesDefeated').textContent=bossesDefeated;document.getElementById('finalElo').textContent = Math.floor(playerELO);document.getElementById('gameOver').style.display='flex';}
+function gameOver(){
+    gameRunning=false;
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
+    AudioSys.gameOver();
+    document.getElementById('finalScore').textContent=score;
+    document.getElementById('finalLevel').textContent=currentLevel-1;
+    document.getElementById('finalCombo').textContent=`x${maxCombo}`;
+    document.getElementById('bossesDefeated').textContent=bossesDefeated;
+    document.getElementById('finalElo').textContent = Math.floor(playerELO);
+    document.getElementById('gameOver').style.display='flex';
+}
 
 function restartGame(){
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
     document.getElementById('gameOver').style.display='none';
     document.getElementById('pauseMenu').style.display='none';
     document.getElementById('caseShopScreen').style.display='none';
     currentLevel=1;score=0;playerHealth=maxHealth;comboCount=1;maxCombo=1;comboMultiplier=1;lastCheckpointX=0;bossesDefeated=0;
     roundCoins=0;roundDamage=0;
-    generateLevel(currentLevel);player=new Player();cameraX=0;updateUI();updateHealthBar();updateDashIndicator();updateEloDisplay();
-    document.getElementById('bossHealthBar').style.display='none';gameRunning=true;gameLoop();
+    generateLevel(currentLevel);
+    player = new Player();
+    cameraX=0;
+    updateUI();
+    updateHealthBar();
+    updateDashIndicator();
+    updateEloDisplay();
+    document.getElementById('bossHealthBar').style.display='none';
+    gameRunning=true;
+    gameLoop();
 }
 
+// ИСПРАВЛЕННАЯ функция паузы - теперь не создает второй цикл
 function togglePause(){
     const pm = document.getElementById('pauseMenu');
     if(pm.style.display === 'flex'){
         pm.style.display = 'none';
         gameRunning = true;
-        gameLoop();
+        // Не вызываем gameLoop() повторно, так как он уже работает
+        // Просто снимаем паузу
     } else {
         showPauseMenu();
     }
@@ -634,6 +811,7 @@ function togglePause(){
 
 function showPauseMenu(){
     gameRunning = false;
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
     document.getElementById('pauseMenu').style.display = 'flex';
 }
 

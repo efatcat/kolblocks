@@ -1,4 +1,4 @@
-// game.js - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
+// game.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (текстуры до классов)
 
 // ==================== КОНФИГУРАЦИЯ ====================
 const CONFIG = {
@@ -13,6 +13,19 @@ const CONFIG = {
     level: { basePlatforms: 20, platformGrowth: 2, baseEnemies: 3, enemyGrowth: 1.2, baseWidth: 2500, widthGrowth: 400 },
     combat: { comboDecay: 180 }
 };
+
+// ==================== ТЕКСТУРЫ (ДО ОПРЕДЕЛЕНИЯ КЛАССОВ) ====================
+const platformTextures = [
+    { color: '#FF2E63', pattern: 'stripes' },
+    { color: '#08D9D6', pattern: 'dots' },
+    { color: '#FFDE7D', pattern: 'checker' },
+    { color: '#6A2C70', pattern: 'zigzag' },
+    { color: '#4ECDC4', pattern: 'bricks' },
+    { color: '#FF9A76', pattern: 'waves' }
+];
+
+const enemyColors = ['#FF2E63', '#FFDE7D', '#6A2C70', '#08D9D6', '#AA00FF'];
+const flyingEnemyColors = ['#FF00FF', '#00FFFF', '#FFFF00', '#FF6600'];
 
 // Классы игрока
 const PLAYER_CLASSES = {
@@ -89,10 +102,6 @@ let currentLevel = 1, score = 0, playerHealth = 100, maxHealth = 100;
 let comboCount = 1, maxCombo = 1, comboTimer = 0, comboMultiplier = 1;
 let screenShake = 0, shakeIntensity = 0, lastCheckpointX = 0, boss = null, bossesDefeated = 0;
 let levelKeys = [];
-
-const platformTextures = [{ color: '#FF2E63', pattern: 'stripes' }, { color: '#08D9D6', pattern: 'dots' }, { color: '#FFDE7D', pattern: 'checker' }, { color: '#6A2C70', pattern: 'zigzag' }, { color: '#4ECDC4', pattern: 'bricks' }, { color: '#FF9A76', pattern: 'waves' }];
-const enemyColors = ['#FF2E63', '#FFDE7D', '#6A2C70', '#08D9D6', '#AA00FF'];
-const flyingEnemyColors = ['#FF00FF', '#00FFFF', '#FFFF00', '#FF6600'];
 
 // ==================== АУДИО ====================
 const AudioSys = {
@@ -477,7 +486,145 @@ class Arrow {
     }
 }
 
+// ==================== ПЛАТФОРМА ====================
+class Platform {
+    constructor(x, y, width, textureIndex) {
+        this.x = x; this.y = y; this.width = width; this.height = 25;
+        this.texture = platformTextures[textureIndex % platformTextures.length];
+        this.hasGlow = Math.random() > 0.7; this.glowPhase = Math.random() * Math.PI * 2;
+        this.type = Math.random() > 0.8 ? (Math.random() > 0.5 ? 'moving' : 'breaking') : 'normal';
+        this.moveDirection = 1; this.moveSpeed = 1; this.originalX = x;
+        this.breakTimer = 0; this.broken = false; this.isLava = false; this.lavaDamageTimer = 0;
+    }
+    update() {
+        if (this.hasGlow) this.glowPhase += 0.05;
+        if (this.type === 'moving' && !this.broken) { this.x += this.moveSpeed * this.moveDirection; if (Math.abs(this.x - this.originalX) > 100) this.moveDirection *= -1; }
+        if (this.type === 'breaking' && this.breakTimer > 0) { this.breakTimer--; if (this.breakTimer === 0) { this.broken = true; setTimeout(() => this.broken = false, 3000); } }
+    }
+    draw(ctx, cameraX) {
+        if (this.broken) return;
+        const drawX = this.x - cameraX;
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(drawX + 3, this.y + 3, this.width, this.height);
+        if (this.isLava) { const grad = ctx.createLinearGradient(drawX, this.y, drawX + this.width, this.y + this.height); grad.addColorStop(0, '#ff4500'); grad.addColorStop(1, '#ff8c00'); ctx.fillStyle = grad; }
+        else { ctx.fillStyle = this.texture.color; }
+        if (this.type === 'breaking' && this.breakTimer > 0) ctx.globalAlpha = Math.sin(Date.now() / 100) * 0.3 + 0.7;
+        ctx.fillRect(drawX, this.y, this.width, this.height); ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(255,255,255,0.12)'; const p = this.texture.pattern;
+        if (p === 'stripes') { for (let i = 0; i < this.width; i += 30) ctx.fillRect(drawX + i, this.y, 15, this.height); }
+        else if (p === 'dots') { for (let i = 6; i < this.width; i += 12) for (let j = 6; j < this.height; j += 12) { ctx.beginPath(); ctx.arc(drawX + i, this.y + j, 2, 0, Math.PI * 2); ctx.fill(); } }
+        else if (p === 'checker') { for (let i = 0; i < this.width; i += 8) for (let j = 0; j < this.height; j += 8) if ((Math.floor(i / 8) + Math.floor(j / 8)) % 2 === 0) ctx.fillRect(drawX + i, this.y + j, 8, 8); }
+        else if (p === 'zigzag') { for (let i = 0; i < this.width; i += 20) { ctx.beginPath(); ctx.moveTo(drawX + i, this.y + this.height); ctx.lineTo(drawX + i + 10, this.y); ctx.lineTo(drawX + i + 20, this.y + this.height); ctx.fill(); } }
+        else if (p === 'bricks') { for (let i = 0; i < this.width; i += 25) for (let j = 0; j < this.height; j += 12) if ((i / 25 + j / 12) % 2 === 0) ctx.fillRect(drawX + i, this.y + j, 25, 12); }
+        else if (p === 'waves') { for (let i = 0; i < this.width; i += 30) { ctx.beginPath(); ctx.moveTo(drawX + i, this.y + this.height / 2); for (let j = 0; j < 30; j += 5) { const x = drawX + i + j; const y = this.y + this.height / 2 + Math.sin(j / 30 * Math.PI * 2) * 5; ctx.lineTo(x, y); } ctx.lineTo(drawX + i + 30, this.y + this.height); ctx.lineTo(drawX + i, this.y + this.height); ctx.closePath(); ctx.fill(); } }
+        if (this.hasGlow) { const gi = Math.sin(this.glowPhase) * 0.3 + 0.7; ctx.shadowColor = this.texture.color; ctx.shadowBlur = 15 * gi; ctx.strokeStyle = this.texture.color; ctx.lineWidth = 2; ctx.strokeRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0; }
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 2; ctx.strokeRect(drawX, this.y, this.width, this.height);
+        if (this.type === 'breaking') { ctx.fillStyle = '#ff0000'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(drawX + this.width / 4 + i * (this.width / 4), this.y + 5, 3, 0, Math.PI * 2); ctx.fill(); } }
+        if (this.type === 'moving') { ctx.fillStyle = '#0088ff'; const ac = Math.floor(this.width / 30); for (let i = 0; i < ac; i++) { const ax = drawX + 15 + i * 30; ctx.beginPath(); ctx.moveTo(ax, this.y + this.height / 2); ctx.lineTo(ax + 10 * this.moveDirection, this.y + 10); ctx.lineTo(ax + 10 * this.moveDirection, this.y + this.height - 10); ctx.closePath(); ctx.fill(); } }
+        if (this.isLava) { ctx.fillStyle = 'rgba(255, 69, 0, 0.5)'; for (let i = 0; i < this.width; i += 15) { ctx.beginPath(); ctx.rect(drawX + i, this.y, 10, 3); ctx.fill(); } }
+    }
+}
+
 // ==================== ВРАГИ ====================
+class Enemy {
+    constructor(x, y, type = 0) {
+        this.x = x; this.y = y; this.width = 40; this.height = 40;
+        this.type = type; this.color = enemyColors[Math.floor(Math.random() * enemyColors.length)];
+        this.speed = type === 0 ? 0 : type === 1 ? 1 + Math.random() * 2 : 0;
+        this.direction = Math.random() > 0.5 ? 1 : -1;
+        this.patrolRange = 100 + Math.random() * 200;
+        this.startX = x; this.jumpCooldown = 0;
+        this.health = type === 0 ? 1 : type === 1 ? 3 : 1;
+        this.maxHealth = this.health;
+        this.scoreValue = type === 0 ? 100 : type === 1 ? 150 : 110;
+        this.active = true;
+    }
+    update() {
+        if (!this.active) return;
+        if (this.type === 1) { this.x += this.speed * this.direction; if (Math.abs(this.x - this.startX) > this.patrolRange) this.direction *= -1; }
+        if (this.type === 2 && this.jumpCooldown <= 0) {
+            let onPlatform = false;
+            for (let p of platforms) { if (this.x < p.x + p.width && this.x + this.width > p.x && this.y + this.height > p.y && this.y + this.height < p.y + 30) { onPlatform = true; break; } }
+            if (onPlatform) { const dir = player.x > this.x ? 1 : -1; this.y -= 12 + Math.random() * 4; this.x += dir * (8 + Math.random() * 4); this.jumpCooldown = 60 + Math.random() * 120; }
+        }
+        this.jumpCooldown--; this.y += 0.8;
+        for (let platform of platforms) {
+            if (this.x < platform.x + platform.width && this.x + this.width > platform.x && this.y + this.height > platform.y && this.y + this.height < platform.y + 30) {
+                this.y = platform.y - this.height;
+                if (this.type === 1 && (this.x <= platform.x + 5 || this.x + this.width >= platform.x + platform.width - 5)) this.direction *= -1;
+            }
+        }
+    }
+    takeDamage(amount = 1) { this.health -= amount; if (this.health <= 0) { necromancerResurrectQueue.push({ x: this.x, y: this.y }); this.destroy(); return true; } return false; }
+    destroy() {
+        this.active = false; addScore(this.scoreValue * comboMultiplier); updateCombo(); AudioSys.collect();
+        for (let i = 0; i < 20; i++) particlePool.acquire(this.x + this.width / 2, this.y + this.height / 2, this.color);
+        if (Math.random() < 0.35) coins.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 12, color: '#FFDE7D', bounce: 0 });
+        if (Math.random() < 0.12) powerUps.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 15, color: '#FF2E63', type: 'health' });
+    }
+    draw(ctx, cameraX) {
+        if (!this.active) return;
+        const drawX = this.x - cameraX;
+        ctx.fillStyle = this.color; ctx.fillRect(drawX, this.y, this.width, this.height);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        if (Math.floor(Math.random() * 3) === 0) { for (let i = 0; i < this.width; i += 15) ctx.fillRect(drawX + i, this.y, 8, this.height); }
+        else { for (let i = 0; i < this.width; i += 10) for (let j = 0; j < this.height; j += 10) if ((Math.floor(i / 10) + Math.floor(j / 10)) % 2 === 0) ctx.fillRect(drawX + i, this.y + j, 10, 10); }
+        ctx.fillStyle = '#000'; ctx.fillRect(drawX + 10, this.y + 10, 8, 8); ctx.fillRect(drawX + this.width - 18, this.y + 10, 8, 8);
+        ctx.fillStyle = this.type === 0 ? '#ff0000' : this.type === 1 ? '#0088ff' : '#ffff00'; ctx.fillRect(drawX, this.y, this.width, 5);
+        if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
+    }
+}
+
+class FlyingEnemy {
+    constructor(x, y) {
+        this.x = x; this.y = y; this.originalY = y;
+        this.width = 35; this.height = 35;
+        this.color = flyingEnemyColors[Math.floor(Math.random() * flyingEnemyColors.length)];
+        this.speed = 1.5 + Math.random() * 1.5; this.direction = Math.random() > 0.5 ? 1 : -1;
+        this.health = 2; this.maxHealth = 2;
+        this.wingPhase = 0; this.floatAmplitude = 20 + Math.random() * 30;
+        this.floatSpeed = 0.05 + Math.random() * 0.03; this.floatPhase = Math.random() * Math.PI * 2;
+        this.chargeCooldown = 0; this.isCharging = false; this.chargeDirection = 0;
+        this.active = true;
+    }
+    update() {
+        if (!this.active) return;
+        this.wingPhase += 0.2; this.floatPhase += this.floatSpeed;
+        this.y = this.originalY + Math.sin(this.floatPhase) * this.floatAmplitude;
+        this.x += this.speed * this.direction;
+        if (this.x < cameraX - 50 || this.x > cameraX + canvas.width + 50) this.direction *= -1;
+        if (!this.isCharging) {
+            this.chargeCooldown--;
+            if (this.chargeCooldown <= 0 && player) {
+                const dx = player.x - this.x, dy = player.y - this.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 300) { this.isCharging = true; this.chargeDirection = dx > 0 ? 1 : -1; this.chargeCooldown = 120 + Math.random() * 120; }
+            }
+        } else {
+            this.x += 8 * this.chargeDirection; if (player) this.y += (player.y - this.y) * 0.1;
+            if (Math.abs(player.x - this.x) < 50 || this.x < cameraX - 100 || this.x > cameraX + canvas.width + 100) { this.isCharging = false; this.chargeCooldown = 60 + Math.random() * 60; }
+        }
+    }
+    takeDamage(amount = 1) { this.health -= amount; if (this.health <= 0) { this.destroy(); return true; } return false; }
+    destroy() {
+        this.active = false; addScore(200 * comboMultiplier); updateCombo(); AudioSys.collect();
+        for (let i = 0; i < 30; i++) particlePool.acquire(this.x + this.width / 2, this.y + this.height / 2, this.color);
+        if (Math.random() < 0.5) coins.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 12, color: '#FFDE7D', bounce: 0 });
+        if (Math.random() < 0.3) powerUps.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 15, color: '#FF2E63', type: 'health' });
+    }
+    draw(ctx, cameraX) {
+        if (!this.active) return;
+        const drawX = this.x - cameraX;
+        ctx.fillStyle = this.color; ctx.fillRect(drawX, this.y, this.width, this.height);
+        ctx.fillStyle = this.color + '80';
+        const wy = this.y + this.height / 2, wa = Math.sin(this.wingPhase) * 10;
+        ctx.beginPath(); ctx.moveTo(drawX - 15, wy); ctx.quadraticCurveTo(drawX - 25, wy - wa, drawX - 15, wy); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(drawX + this.width + 15, wy); ctx.quadraticCurveTo(drawX + this.width + 25, wy - wa, drawX + this.width + 15, wy); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.fillRect(drawX + 8, this.y + 8, 6, 6); ctx.fillRect(drawX + 21, this.y + 8, 6, 6);
+        if (this.isCharging) { ctx.fillStyle = '#FF0000'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(drawX + this.width / 2, this.y - 10 - i * 5, 2, 0, Math.PI * 2); ctx.fill(); } }
+        ctx.shadowColor = this.color; ctx.shadowBlur = 15; ctx.fillRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0;
+        if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
+    }
+}
+
 class Necromancer {
     constructor(x, y) {
         this.x = x; this.y = y; this.width = 40; this.height = 50;
@@ -541,6 +688,7 @@ class Necromancer {
         if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
     }
 }
+
 class ShooterEnemy {
     constructor(x, y) {
         this.x = x; this.y = y; this.width = 40; this.height = 40;
@@ -585,6 +733,7 @@ class ShooterEnemy {
         if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
     }
 }
+
 class Vortex {
     constructor(x, y) {
         this.x = x; this.y = y; this.width = 45; this.height = 45;
@@ -639,6 +788,7 @@ class Vortex {
         if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
     }
 }
+
 class Bum {
     constructor(x, y, platform) {
         this.x = x; this.y = y; this.width = 40; this.height = 45;
@@ -700,104 +850,7 @@ class Bum {
         }
     }
 }
-class Enemy {
-    constructor(x, y, type = 0) {
-        this.x = x; this.y = y; this.width = 40; this.height = 40;
-        this.type = type; this.color = enemyColors[Math.floor(Math.random() * enemyColors.length)];
-        this.speed = type === 0 ? 0 : type === 1 ? 1 + Math.random() * 2 : 0;
-        this.direction = Math.random() > 0.5 ? 1 : -1;
-        this.patrolRange = 100 + Math.random() * 200;
-        this.startX = x; this.jumpCooldown = 0;
-        this.health = type === 0 ? 1 : type === 1 ? 3 : 1;
-        this.maxHealth = this.health;
-        this.scoreValue = type === 0 ? 100 : type === 1 ? 150 : 110;
-        this.active = true;
-    }
-    update() {
-        if (!this.active) return;
-        if (this.type === 1) { this.x += this.speed * this.direction; if (Math.abs(this.x - this.startX) > this.patrolRange) this.direction *= -1; }
-        if (this.type === 2 && this.jumpCooldown <= 0) {
-            let onPlatform = false;
-            for (let p of platforms) { if (this.x < p.x + p.width && this.x + this.width > p.x && this.y + this.height > p.y && this.y + this.height < p.y + 30) { onPlatform = true; break; } }
-            if (onPlatform) { const dir = player.x > this.x ? 1 : -1; this.y -= 12 + Math.random() * 4; this.x += dir * (8 + Math.random() * 4); this.jumpCooldown = 60 + Math.random() * 120; }
-        }
-        this.jumpCooldown--; this.y += 0.8;
-        for (let platform of platforms) {
-            if (this.x < platform.x + platform.width && this.x + this.width > platform.x && this.y + this.height > platform.y && this.y + this.height < platform.y + 30) {
-                this.y = platform.y - this.height;
-                if (this.type === 1 && (this.x <= platform.x + 5 || this.x + this.width >= platform.x + platform.width - 5)) this.direction *= -1;
-            }
-        }
-    }
-    takeDamage(amount = 1) { this.health -= amount; if (this.health <= 0) { necromancerResurrectQueue.push({ x: this.x, y: this.y }); this.destroy(); return true; } return false; }
-    destroy() {
-        this.active = false; addScore(this.scoreValue * comboMultiplier); updateCombo(); AudioSys.collect();
-        for (let i = 0; i < 20; i++) particlePool.acquire(this.x + this.width / 2, this.y + this.height / 2, this.color);
-        if (Math.random() < 0.35) coins.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 12, color: '#FFDE7D', bounce: 0 });
-        if (Math.random() < 0.12) powerUps.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 15, color: '#FF2E63', type: 'health' });
-    }
-    draw(ctx, cameraX) {
-        if (!this.active) return;
-        const drawX = this.x - cameraX;
-        ctx.fillStyle = this.color; ctx.fillRect(drawX, this.y, this.width, this.height);
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        if (Math.floor(Math.random() * 3) === 0) { for (let i = 0; i < this.width; i += 15) ctx.fillRect(drawX + i, this.y, 8, this.height); }
-        else { for (let i = 0; i < this.width; i += 10) for (let j = 0; j < this.height; j += 10) if ((Math.floor(i / 10) + Math.floor(j / 10)) % 2 === 0) ctx.fillRect(drawX + i, this.y + j, 10, 10); }
-        ctx.fillStyle = '#000'; ctx.fillRect(drawX + 10, this.y + 10, 8, 8); ctx.fillRect(drawX + this.width - 18, this.y + 10, 8, 8);
-        ctx.fillStyle = this.type === 0 ? '#ff0000' : this.type === 1 ? '#0088ff' : '#ffff00'; ctx.fillRect(drawX, this.y, this.width, 5);
-        if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
-    }
-}
-class FlyingEnemy {
-    constructor(x, y) {
-        this.x = x; this.y = y; this.originalY = y;
-        this.width = 35; this.height = 35;
-        this.color = flyingEnemyColors[Math.floor(Math.random() * flyingEnemyColors.length)];
-        this.speed = 1.5 + Math.random() * 1.5; this.direction = Math.random() > 0.5 ? 1 : -1;
-        this.health = 2; this.maxHealth = 2;
-        this.wingPhase = 0; this.floatAmplitude = 20 + Math.random() * 30;
-        this.floatSpeed = 0.05 + Math.random() * 0.03; this.floatPhase = Math.random() * Math.PI * 2;
-        this.chargeCooldown = 0; this.isCharging = false; this.chargeDirection = 0;
-        this.active = true;
-    }
-    update() {
-        if (!this.active) return;
-        this.wingPhase += 0.2; this.floatPhase += this.floatSpeed;
-        this.y = this.originalY + Math.sin(this.floatPhase) * this.floatAmplitude;
-        this.x += this.speed * this.direction;
-        if (this.x < cameraX - 50 || this.x > cameraX + canvas.width + 50) this.direction *= -1;
-        if (!this.isCharging) {
-            this.chargeCooldown--;
-            if (this.chargeCooldown <= 0 && player) {
-                const dx = player.x - this.x, dy = player.y - this.y;
-                if (Math.sqrt(dx * dx + dy * dy) < 300) { this.isCharging = true; this.chargeDirection = dx > 0 ? 1 : -1; this.chargeCooldown = 120 + Math.random() * 120; }
-            }
-        } else {
-            this.x += 8 * this.chargeDirection; if (player) this.y += (player.y - this.y) * 0.1;
-            if (Math.abs(player.x - this.x) < 50 || this.x < cameraX - 100 || this.x > cameraX + canvas.width + 100) { this.isCharging = false; this.chargeCooldown = 60 + Math.random() * 60; }
-        }
-    }
-    takeDamage(amount = 1) { this.health -= amount; if (this.health <= 0) { this.destroy(); return true; } return false; }
-    destroy() {
-        this.active = false; addScore(200 * comboMultiplier); updateCombo(); AudioSys.collect();
-        for (let i = 0; i < 30; i++) particlePool.acquire(this.x + this.width / 2, this.y + this.height / 2, this.color);
-        if (Math.random() < 0.5) coins.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 12, color: '#FFDE7D', bounce: 0 });
-        if (Math.random() < 0.3) powerUps.push({ x: this.x + this.width / 2, y: this.y + this.height / 2, size: 15, color: '#FF2E63', type: 'health' });
-    }
-    draw(ctx, cameraX) {
-        if (!this.active) return;
-        const drawX = this.x - cameraX;
-        ctx.fillStyle = this.color; ctx.fillRect(drawX, this.y, this.width, this.height);
-        ctx.fillStyle = this.color + '80';
-        const wy = this.y + this.height / 2, wa = Math.sin(this.wingPhase) * 10;
-        ctx.beginPath(); ctx.moveTo(drawX - 15, wy); ctx.quadraticCurveTo(drawX - 25, wy - wa, drawX - 15, wy); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(drawX + this.width + 15, wy); ctx.quadraticCurveTo(drawX + this.width + 25, wy - wa, drawX + this.width + 15, wy); ctx.fill();
-        ctx.fillStyle = '#000'; ctx.fillRect(drawX + 8, this.y + 8, 6, 6); ctx.fillRect(drawX + 21, this.y + 8, 6, 6);
-        if (this.isCharging) { ctx.fillStyle = '#FF0000'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(drawX + this.width / 2, this.y - 10 - i * 5, 2, 0, Math.PI * 2); ctx.fill(); } }
-        ctx.shadowColor = this.color; ctx.shadowBlur = 15; ctx.fillRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0;
-        if (this.health < this.maxHealth) { ctx.fillStyle = '#4af626'; ctx.fillRect(drawX, this.y - 8, (this.width * this.health) / this.maxHealth, 4); }
-    }
-}
+
 class Boss {
     constructor(x, y) {
         this.x = x; this.y = y; this.width = 80; this.height = 80;
@@ -847,44 +900,6 @@ class Boss {
         ctx.fillStyle = '#ff6600'; ctx.beginPath(); ctx.moveTo(drawX + 10, this.y + 20); ctx.lineTo(drawX, this.y); ctx.lineTo(drawX + 20, this.y + 15); ctx.fill();
         ctx.beginPath(); ctx.moveTo(drawX + 70, this.y + 20); ctx.lineTo(drawX + 80, this.y); ctx.lineTo(drawX + 60, this.y + 15); ctx.fill();
         if (this.health < this.maxHealth * 0.3 && Math.floor(Date.now() / 200) % 2 === 0) { ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 4; ctx.strokeRect(drawX - 5, this.y - 5, this.width + 10, this.height + 10); }
-    }
-}
-
-// ==================== ПЛАТФОРМА ====================
-class Platform {
-    constructor(x, y, width, textureIndex) {
-        this.x = x; this.y = y; this.width = width; this.height = 25;
-        this.texture = platformTextures[textureIndex % platformTextures.length];
-        this.hasGlow = Math.random() > 0.7; this.glowPhase = Math.random() * Math.PI * 2;
-        this.type = Math.random() > 0.8 ? (Math.random() > 0.5 ? 'moving' : 'breaking') : 'normal';
-        this.moveDirection = 1; this.moveSpeed = 1; this.originalX = x;
-        this.breakTimer = 0; this.broken = false; this.isLava = false; this.lavaDamageTimer = 0;
-    }
-    update() {
-        if (this.hasGlow) this.glowPhase += 0.05;
-        if (this.type === 'moving' && !this.broken) { this.x += this.moveSpeed * this.moveDirection; if (Math.abs(this.x - this.originalX) > 100) this.moveDirection *= -1; }
-        if (this.type === 'breaking' && this.breakTimer > 0) { this.breakTimer--; if (this.breakTimer === 0) { this.broken = true; setTimeout(() => this.broken = false, 3000); } }
-    }
-    draw(ctx, cameraX) {
-        if (this.broken) return;
-        const drawX = this.x - cameraX;
-        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(drawX + 3, this.y + 3, this.width, this.height);
-        if (this.isLava) { const grad = ctx.createLinearGradient(drawX, this.y, drawX + this.width, this.y + this.height); grad.addColorStop(0, '#ff4500'); grad.addColorStop(1, '#ff8c00'); ctx.fillStyle = grad; }
-        else { ctx.fillStyle = this.texture.color; }
-        if (this.type === 'breaking' && this.breakTimer > 0) ctx.globalAlpha = Math.sin(Date.now() / 100) * 0.3 + 0.7;
-        ctx.fillRect(drawX, this.y, this.width, this.height); ctx.globalAlpha = 1;
-        ctx.fillStyle = 'rgba(255,255,255,0.12)'; const p = this.texture.pattern;
-        if (p === 'stripes') { for (let i = 0; i < this.width; i += 30) ctx.fillRect(drawX + i, this.y, 15, this.height); }
-        else if (p === 'dots') { for (let i = 6; i < this.width; i += 12) for (let j = 6; j < this.height; j += 12) { ctx.beginPath(); ctx.arc(drawX + i, this.y + j, 2, 0, Math.PI * 2); ctx.fill(); } }
-        else if (p === 'checker') { for (let i = 0; i < this.width; i += 8) for (let j = 0; j < this.height; j += 8) if ((Math.floor(i / 8) + Math.floor(j / 8)) % 2 === 0) ctx.fillRect(drawX + i, this.y + j, 8, 8); }
-        else if (p === 'zigzag') { for (let i = 0; i < this.width; i += 20) { ctx.beginPath(); ctx.moveTo(drawX + i, this.y + this.height); ctx.lineTo(drawX + i + 10, this.y); ctx.lineTo(drawX + i + 20, this.y + this.height); ctx.fill(); } }
-        else if (p === 'bricks') { for (let i = 0; i < this.width; i += 25) for (let j = 0; j < this.height; j += 12) if ((i / 25 + j / 12) % 2 === 0) ctx.fillRect(drawX + i, this.y + j, 25, 12); }
-        else if (p === 'waves') { for (let i = 0; i < this.width; i += 30) { ctx.beginPath(); ctx.moveTo(drawX + i, this.y + this.height / 2); for (let j = 0; j < 30; j += 5) { const x = drawX + i + j; const y = this.y + this.height / 2 + Math.sin(j / 30 * Math.PI * 2) * 5; ctx.lineTo(x, y); } ctx.lineTo(drawX + i + 30, this.y + this.height); ctx.lineTo(drawX + i, this.y + this.height); ctx.closePath(); ctx.fill(); } }
-        if (this.hasGlow) { const gi = Math.sin(this.glowPhase) * 0.3 + 0.7; ctx.shadowColor = this.texture.color; ctx.shadowBlur = 15 * gi; ctx.strokeStyle = this.texture.color; ctx.lineWidth = 2; ctx.strokeRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0; }
-        ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 2; ctx.strokeRect(drawX, this.y, this.width, this.height);
-        if (this.type === 'breaking') { ctx.fillStyle = '#ff0000'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(drawX + this.width / 4 + i * (this.width / 4), this.y + 5, 3, 0, Math.PI * 2); ctx.fill(); } }
-        if (this.type === 'moving') { ctx.fillStyle = '#0088ff'; const ac = Math.floor(this.width / 30); for (let i = 0; i < ac; i++) { const ax = drawX + 15 + i * 30; ctx.beginPath(); ctx.moveTo(ax, this.y + this.height / 2); ctx.lineTo(ax + 10 * this.moveDirection, this.y + 10); ctx.lineTo(ax + 10 * this.moveDirection, this.y + this.height - 10); ctx.closePath(); ctx.fill(); } }
-        if (this.isLava) { ctx.fillStyle = 'rgba(255, 69, 0, 0.5)'; for (let i = 0; i < this.width; i += 15) { ctx.beginPath(); ctx.rect(drawX + i, this.y, 10, 3); ctx.fill(); } }
     }
 }
 

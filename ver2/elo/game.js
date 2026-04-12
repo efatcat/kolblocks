@@ -10,7 +10,13 @@ const CONFIG = {
     audio: { enabled: true, volume: 0.4 },
     camera: { followSpeed: 0.1, playerOffset: 0.35 },
     level: { basePlatforms: 20, platformGrowth: 2, baseEnemies: 3, enemyGrowth: 1.2, baseWidth: 2500, widthGrowth: 400 },
-    combat: { comboDecay: 180 }
+    combat: { comboDecay: 180 },
+    liquids: {
+        water: { color: '#3399ff', glow: '#33ccff', damage: 0, slow: 0.5, gravity: 0.4, spread: 0.3 },
+        lava:  { color: '#ff4400', glow: '#ff8800', damage: 5,  slow: 1.0, gravity: 0.6, spread: 0.2 },
+        maxDrops: 300,
+        generationRate: 0.02
+    }
 };
 
 const CHEST_SKINS = [
@@ -40,9 +46,11 @@ let roundCoins = 0, roundDamage = 0;
 let batidaoImage = null;
 let activeAuraEffect = null;
 let gameLoopId = null;
-let activeTimeouts = []; // Для отслеживания таймеров
+let activeTimeouts = [];
 
-// Функция для безопасной очистки таймеров
+let liquids = [];
+let liquidSources = [];
+
 function safeTimeout(fn, delay) {
     const id = setTimeout(() => {
         fn();
@@ -108,6 +116,60 @@ class ObjectPool {
     release(obj) { obj.active = false; const idx = this.active.indexOf(obj); if (idx > -1) this.active.splice(idx, 1); if (this.pool.length < this.maxSize) this.pool.push(obj); }
     releaseAll() { while (this.active.length > 0) this.release(this.active[0]); }
     get activeObjects() { return [...this.active]; }
+}
+
+// ==================== КЛАСС КАПЛИ ЖИДКОСТИ ====================
+class LiquidDrop {
+    constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = 0;
+        this.type = type;
+        this.radius = 5 + Math.random() * 3;
+        this.life = 300 + Math.random() * 200;
+    }
+    
+    update() {
+        const cfg = CONFIG.liquids[this.type];
+        this.vy += cfg.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        for (let p of platforms) {
+            if (this.y + this.radius > p.y && this.y - this.radius < p.y + p.height &&
+                this.x + this.radius > p.x && this.x - this.radius < p.x + p.width) {
+                this.y = p.y - this.radius;
+                this.vy = 0;
+                if (Math.random() < cfg.spread) {
+                    const dir = Math.random() > 0.5 ? 1 : -1;
+                    this.vx += dir * 1.2;
+                    if (Math.abs(this.vx) > 2.5) this.vx *= 0.95;
+                }
+                this.vx *= 0.98;
+                break;
+            }
+        }
+        
+        this.life--;
+        if (this.life <= 0 || this.y > canvas.height + 200) return false;
+        return true;
+    }
+    
+    draw(ctx, cameraX) {
+        const cfg = CONFIG.liquids[this.type];
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = cfg.glow;
+        ctx.beginPath();
+        ctx.arc(this.x - cameraX, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = cfg.color;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(this.x - cameraX - 2, this.y - 2, this.radius / 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
 }
 
 // ==================== ТЕКСТУРЫ БОССОВ ====================
@@ -353,7 +415,6 @@ function hideResult() {
     if(r) r.style.display = 'none'; 
 }
 
-// Функция показа эффекта ауры (исправлена - нет утечки)
 function showAuraEffectOnPlayer(x, y, aura) {
     if(activeAuraEffect) {
         activeAuraEffect.remove();
@@ -416,7 +477,6 @@ function showAuraEffectOnPlayer(x, y, aura) {
     }, 500);
 }
 
-// Добавляем CSS анимации
 const styleSheet = document.createElement("style");
 styleSheet.textContent = `
     @keyframes auraExpandPlayer {
@@ -999,8 +1059,25 @@ class Platform {
 }
 
 // ==================== ГЕНЕРАЦИЯ УРОВНЯ ====================
+function generateLiquidSources() {
+    liquidSources = [];
+    for (let i = 0; i < platforms.length; i++) {
+        if (i % 3 === 0 && i > 2 && i < platforms.length-2) {
+            const p = platforms[i];
+            const type = Math.random() < 0.6 ? 'water' : 'lava';
+            liquidSources.push({
+                x: p.x + p.width/2 + (Math.random() - 0.5) * 40,
+                y: p.y - 8,
+                type: type
+            });
+        }
+    }
+    liquidSources.push({ x: 500, y: 100, type: 'water' });
+    liquidSources.push({ x: levelWidth - 400, y: 250, type: 'lava' });
+}
+
 function generateLevel(level){ 
-    platforms=[]; enemies=[]; flyingEnemies=[]; coins=[]; powerUps=[]; levelKeys=[]; 
+    platforms=[]; enemies=[]; flyingEnemies=[]; coins=[]; powerUps=[]; levelKeys=[]; liquids=[];
     roundCoins=0; roundDamage=0; 
     const minHeight=100,maxHeight=canvas.height-150; 
     const platformCount=CONFIG.level.basePlatforms+Math.floor(level*CONFIG.level.platformGrowth); 
@@ -1043,7 +1120,9 @@ function generateLevel(level){
     } 
     for(let i=0;i<flyingEnemyCount;i++)flyingEnemies.push(new FlyingEnemy(300+Math.random()*(levelWidth-600),100+Math.random()*200)); 
     for(let i=0;i<Math.floor(level/2)+1;i++){const pi=Math.floor(Math.random()*(platforms.length-10))+5;const p=platforms[pi]; if(p) powerUps.push({x:p.x+p.width/2,y:p.y-40,size:15,color:'#FF2E63',type:'health'});} 
-    for(let cx=800;cx<levelWidth-300;cx+=800)platforms.push(new Platform(cx,canvas.height-180,100,2)); 
+    for(let cx=800;cx<levelWidth-300;cx+=800)platforms.push(new Platform(cx,canvas.height-180,100,2));
+    
+    generateLiquidSources();
     return levelWidth; 
 }
 
@@ -1054,6 +1133,59 @@ function updateKeys(){for(let i=levelKeys.length-1;i>=0;i--){const k=levelKeys[i
 function updatePowerUps(){for(let i=powerUps.length-1;i>=0;i--){const p=powerUps[i];p.y+=Math.sin(Date.now()/500)*0.5;if(player.checkCollision({x:p.x-p.size/2,y:p.y-p.size/2,width:p.size,height:p.size})){if(p.type==='health'){playerHealth=Math.min(maxHealth,playerHealth+30);updateHealthBar();}else if(p.type==='dash'){player.dashCharges=Math.min(CONFIG.player.maxDashes,player.dashCharges+1);updateDashIndicator();}for(let j=0;j<20;j++)particlePool.acquire(p.x,p.y,p.color);AudioSys.collect();powerUps.splice(i,1);}}}
 function checkEnemyCollisions(){for(let e of enemies){if(e.active&&player.checkCollision(e)){if(player.takeDamage(20,e.x<player.x?10:-10,-8,e.color))return;}}for(let e of flyingEnemies){if(e.active&&player.checkCollision(e)){if(player.takeDamage(25,e.x<player.x?12:-12,-10,'#FF00FF'))return;}}}
 function checkCheckpoints(){if(player.x>lastCheckpointX+800){lastCheckpointX=player.x;player.saveCheckpoint();}}
+
+// Функции для жидкостей
+function updateLiquids() {
+    for (let i = liquids.length-1; i >= 0; i--) {
+        if (!liquids[i].update()) {
+            liquids.splice(i,1);
+        }
+    }
+    
+    for (let src of liquidSources) {
+        if (Math.random() < CONFIG.liquids.generationRate && liquids.length < CONFIG.liquids.maxDrops) {
+            liquids.push(new LiquidDrop(src.x, src.y, src.type));
+        }
+    }
+    
+    for (let liq of liquids) {
+        const dx = player.x + player.width/2 - liq.x;
+        const dy = player.y + player.height/2 - liq.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < liq.radius + 15) {
+            if (liq.type === 'lava') {
+                if (player.invulnerable <= 0) {
+                    player.takeDamage(CONFIG.liquids.lava.damage, (player.x - liq.x) * 2, -6, '#ff4400');
+                }
+            } else if (liq.type === 'water') {
+                player.velX *= CONFIG.liquids.water.slow;
+                player.velY *= 0.98;
+            }
+            if (Math.random() < 0.3) {
+                liquids.splice(liquids.indexOf(liq), 1);
+            }
+        }
+    }
+    
+    for (let i=0; i<liquids.length; i++) {
+        if (liquids[i].type === 'water') {
+            for (let j=0; j<liquids.length; j++) {
+                if (liquids[j] && liquids[j].type === 'lava' && Math.hypot(liquids[i].x - liquids[j].x, liquids[i].y - liquids[j].y) < 15) {
+                    for (let k=0;k<10;k++) particlePool.acquire(liquids[i].x, liquids[i].y, '#aaaaaa');
+                    liquids.splice(j,1);
+                    liquids.splice(i,1);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+function drawLiquids() {
+    for (let liq of liquids) {
+        liq.draw(ctx, cameraX);
+    }
+}
 
 // ==================== ОТРИСОВКА ====================
 function drawBackground(){const grad=ctx.createLinearGradient(0,0,0,canvas.height);grad.addColorStop(0,'#0a0a1a');grad.addColorStop(1,'#000000');ctx.fillStyle=grad;ctx.fillRect(0,0,canvas.width,canvas.height);for(let layer=0;layer<3;layer++){const spd=0.05+layer*0.1,alpha=0.1+layer*0.15,size=1+layer*0.5;ctx.fillStyle=`rgba(255,255,255,${alpha})`;for(let i=0;i<40;i++){const x=(i*67+cameraX*spd)%canvas.width;const y=(i*41+layer*100)%canvas.height;ctx.fillRect(x,y,size,size);}}}
@@ -1071,6 +1203,7 @@ function gameLoop(){
     updateCoins();
     updateKeys();
     updatePowerUps();
+    updateLiquids();
     decayCombo();
     checkEnemyCollisions();
     checkCheckpoints();
@@ -1101,6 +1234,7 @@ function gameLoop(){
     drawKeys();
     drawCoins();
     drawPowerUps();
+    drawLiquids();
     drawParticles();
     player.draw(ctx,cameraX);
     drawGoal();
@@ -1156,7 +1290,7 @@ function completeLevel(){
 function gameOver(){
     gameRunning=false;
     if(gameLoopId) cancelAnimationFrame(gameLoopId);
-    clearAllTimeouts(); // Очищаем все таймеры при смерти
+    clearAllTimeouts();
     AudioSys.gameOver();
     const fs = document.getElementById('finalScore');
     if(fs) fs.textContent=score;
@@ -1175,12 +1309,10 @@ function gameOver(){
 function restartGame(){
     if(gameLoopId) cancelAnimationFrame(gameLoopId);
     clearAllTimeouts();
-    // Очищаем активный эффект ауры
     if(activeAuraEffect) {
         activeAuraEffect.remove();
         activeAuraEffect = null;
     }
-    // Очищаем пул частиц
     if(particlePool) particlePool.releaseAll();
     
     const goDiv = document.getElementById('gameOver');

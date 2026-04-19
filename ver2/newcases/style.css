@@ -1,5 +1,8 @@
 /* style.css */
+/* Подключение похожих шрифтов из Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;900&family=Montserrat+Alternates:wght@400;500;600;700&display=swap');
+
+/* Альтернативные стильные шрифты */
 @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Orbitron:wght@400;700;900&display=swap');
 
 * {
@@ -141,7 +144,7 @@ canvas {
     background: rgba(26, 26, 46, 0.95);
     padding: 30px;
     border-radius: 20px;
-    max-width: 900px;
+    max-width: 700px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -153,40 +156,30 @@ canvas {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 20px;
+    gap: 30px;
     margin: 20px 0;
 }
 
 .chest-card {
     text-align: center;
-    padding: 10px;
+    padding: 15px;
     background: rgba(255,255,255,0.05);
     border-radius: 15px;
 }
 
 .chest {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     background: linear-gradient(135deg, #8B4513, #A0522D);
     border: 4px solid #FFD700;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 40px;
+    font-size: 50px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     position: relative;
     margin-bottom: 10px;
-}
-
-.shape-chest {
-    background: linear-gradient(135deg, #2c3e50, #3498db);
-    border-color: #00ffff;
-}
-
-.decorated-chest {
-    background: linear-gradient(135deg, #800080, #ff00ff);
-    border-color: #ffd700;
 }
 
 .aura-chest {
@@ -203,29 +196,17 @@ canvas {
 .chest::after {
     content: '🔒';
     position: absolute;
-    top: -12px;
-    right: -12px;
-    font-size: 20px;
+    top: -15px;
+    right: -15px;
+    font-size: 24px;
     background: #333;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid #FFD700;
-}
-
-.shape-chest::after {
-    content: '⚪';
-    border-color: #00ffff;
-    background: #2c3e50;
-}
-
-.decorated-chest::after {
-    content: '💎';
-    border-color: #ffd700;
-    background: #800080;
 }
 
 .aura-chest::after {
@@ -246,8 +227,8 @@ canvas {
 
 .chest-cost {
     color: #ccc;
-    font-size: 12px;
-    margin: 8px 0;
+    font-size: 14px;
+    margin: 10px 0;
     font-family: 'Unbounded', sans-serif;
 }
 
@@ -271,7 +252,7 @@ canvas {
 }
 
 #levelComplete h2, #gameOver h2, #pauseMenu h2, #caseShopScreen h2 {
-    font-size: 36px;
+    font-size: 42px;
     margin-bottom: 15px;
     background: linear-gradient(45deg, #4af626, #08D9D6, #FFDE7D);
     -webkit-background-clip: text;
@@ -287,7 +268,7 @@ canvas {
 }
 
 #levelComplete p, #gameOver p, #pauseMenu p {
-    font-size: 16px;
+    font-size: 18px;
     color: #ccc;
     margin: 8px 0;
     font-family: 'Unbounded', sans-serif;
@@ -322,7 +303,7 @@ canvas {
     top: 20px;
     left: 20px;
     color: #fff;
-    font-size: 14px;
+    font-size: 16px;
     background: rgba(10, 10, 26, 0.85);
     padding: 12px 18px;
     border-radius: 12px;
@@ -344,12 +325,12 @@ canvas {
     top: 20px;
     right: 20px;
     color: #4af626;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: bold;
     font-family: 'Unbounded', 'Impact', 'Arial Black', sans-serif;
     text-shadow: 0 0 10px #4af626, 0 0 25px #4af626, 0 0 40px #08D9D6;
     background: rgba(10, 10, 26, 0.7);
-    padding: 8px 18px;
+    padding: 10px 22px;
     border-radius: 12px;
     z-index: 100;
     letter-spacing: 3px;
@@ -515,11 +496,11 @@ canvas {
     left: 50%;
     transform: translateX(-50%);
     color: #FFDE7D;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     z-index: 100;
     background: rgba(26, 26, 46, 0.9);
-    padding: 6px 18px;
+    padding: 8px 20px;
     border-radius: 25px;
     border: 1px solid #FFDE7D;
     box-shadow: 0 0 15px rgba(255, 222, 125, 0.3);
@@ -565,9 +546,9 @@ button {
     background: linear-gradient(135deg, #4af626, #08D9D6);
     color: #000;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 25px;
     border-radius: 30px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.25s;
@@ -595,12 +576,12 @@ button:hover::before {
 }
 
 button:hover {
-    transform: translateY(-2px) scale(1.02);
+    transform: translateY(-3px) scale(1.05);
     box-shadow: 0 10px 30px rgba(74, 246, 38, 0.4);
 }
 
 button:active {
-    transform: translateY(-1px) scale(1.01);
+    transform: translateY(-1px) scale(1.02);
 }
 
 button.secondary {
@@ -628,23 +609,13 @@ button:disabled {
 .stat-value {
     color: #4af626;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     font-family: 'Unbounded', monospace;
 }
 
 .stat-label {
     color: #aaa;
     font-family: 'Unbounded', sans-serif;
-}
-
-#classDisplay {
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(74, 246, 38, 0.3);
-}
-
-#className {
-    color: #FFDE7D;
 }
 
 #mobileControls {
@@ -660,13 +631,13 @@ button:disabled {
 }
 
 .mobile-btn {
-    width: 65px;
-    height: 65px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background: rgba(74, 246, 38, 0.3);
     border: 3px solid #4af626;
     color: #fff;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bold;
     display: flex;
     align-items: center;
@@ -683,31 +654,31 @@ button:disabled {
 }
 
 .mobile-btn.jump {
-    width: 75px;
-    height: 75px;
+    width: 80px;
+    height: 80px;
     background: rgba(8, 217, 214, 0.3);
     border-color: #08D9D6;
 }
 
 .mobile-btn.attack {
-    width: 60px;
-    height: 60px;
+    width: 65px;
+    height: 65px;
     background: rgba(255, 46, 99, 0.3);
     border-color: #ff2e63;
-    font-size: 22px;
+    font-size: 24px;
 }
 
 .mobile-btn.dash {
-    width: 55px;
-    height: 55px;
+    width: 60px;
+    height: 60px;
     background: rgba(255, 222, 125, 0.3);
     border-color: #FFDE7D;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .mobile-group {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: flex-end;
 }
 
@@ -734,12 +705,12 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 15px;
-    max-width: 600px;
+    max-width: 500px;
     width: 100%;
     margin: 0 auto;
 }
 
-.skin-item, .class-item {
+.skin-item {
     background: rgba(255,255,255,0.05);
     border-radius: 10px;
     padding: 10px;
@@ -751,57 +722,39 @@ button:disabled {
     transition: all 0.2s;
 }
 
-.skin-item.equipped, .class-item.equipped {
+.skin-item.equipped {
     border-color: #4af626;
     background: rgba(74,246,38,0.15);
 }
 
-.skin-item.locked, .class-item.locked {
+.skin-item.locked {
     opacity: 0.5;
     filter: grayscale(1);
 }
 
-.skin-preview, .class-preview {
-    width: 45px;
-    height: 45px;
+.skin-preview {
+    width: 40px;
+    height: 40px;
     border-radius: 8px;
     border: 2px solid #555;
     margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
 }
 
-.skin-item.equipped .skin-preview,
-.class-item.equipped .class-preview {
+.skin-item.equipped .skin-preview {
     border-color: #4af626;
     box-shadow: 0 0 10px #4af626;
 }
 
-.skin-name, .class-name {
-    font-size: 11px;
+.skin-name {
+    font-size: 12px;
     color: #eee;
     text-align: center;
     font-family: 'Unbounded', sans-serif;
 }
 
-.class-price {
-    font-size: 10px;
-    color: #FFDE7D;
-    font-weight: bold;
-}
-
-.class-desc {
-    font-size: 9px;
-    color: #aaa;
-    text-align: center;
-}
-
 .equip-btn {
-    padding: 4px 8px;
-    font-size: 10px;
+    padding: 5px 10px;
+    font-size: 11px;
     margin-top: 5px;
     width: 100%;
 }
@@ -829,7 +782,7 @@ button:disabled {
 
 #chestResult h3 {
     margin-bottom: 10px;
-    font-size: 22px;
+    font-size: 24px;
     font-family: 'Unbounded', monospace;
 }
 
@@ -869,79 +822,41 @@ button:disabled {
     100% { transform: scale(0) translateY(-80px); opacity: 0; }
 }
 
-.preview-pattern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 6px;
-}
-
-.preview-pattern[data-pattern="crown"] {
-    background: radial-gradient(circle at 50% 30%, #FFD700 2px, transparent 2px);
-    background-size: 8px 8px;
-}
-
-.preview-pattern[data-pattern="runes"] {
-    background: linear-gradient(45deg, #fff 1px, transparent 1px);
-    background-size: 6px 6px;
-}
-
-.preview-pattern[data-pattern="gears"] {
-    background: repeating-linear-gradient(90deg, #aaa 0px, #aaa 2px, transparent 2px, transparent 8px);
-}
-
-.preview-pattern[data-pattern="stars"] {
-    background: radial-gradient(circle at 30% 40%, #fff 1px, transparent 1px);
-    background-size: 10px 10px;
-}
-
-.preview-pattern[data-pattern="grid"] {
-    background-image: linear-gradient(#0ff 1px, transparent 1px), linear-gradient(90deg, #0ff 1px, transparent 1px);
-    background-size: 6px 6px;
-}
-
-.preview-pattern[data-pattern="skull"] {
-    background: linear-gradient(135deg, #ff00ff 2px, transparent 2px);
-    background-size: 8px 8px;
-}
-
 @media (max-width: 768px) {
     #ui {
-        font-size: 12px;
-        padding: 8px 12px;
-        min-width: 180px;
+        font-size: 14px;
+        padding: 10px 15px;
+        min-width: 200px;
     }
     #title {
-        font-size: 18px;
-        padding: 6px 12px;
+        font-size: 20px;
+        padding: 8px 15px;
     }
     #mobileControls {
         display: flex;
     }
     #dashIndicator {
-        bottom: 100px;
+        bottom: 110px;
     }
     #checkpointIndicator {
-        bottom: 100px;
-        font-size: 11px;
-        padding: 5px 10px;
+        bottom: 110px;
+        font-size: 12px;
+        padding: 6px 12px;
     }
     #bossHealthBar {
         width: 80%;
-        height: 22px;
+        height: 25px;
     }
     #eloDisplay {
-        font-size: 14px;
-        padding: 5px 12px;
+        font-size: 16px;
+        padding: 6px 15px;
         top: 15px;
     }
     .skins-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     .pause-content, .shop-content {
-        padding: 15px;
+        padding: 20px;
         width: 95%;
     }
     .chests-container {
@@ -949,21 +864,7 @@ button:disabled {
         align-items: center;
     }
     h2 {
-        font-size: 24px !important;
-    }
-    .chest {
-        width: 70px;
-        height: 70px;
-        font-size: 30px;
-    }
-    .mobile-btn {
-        width: 55px;
-        height: 55px;
-        font-size: 18px;
-    }
-    .mobile-btn.jump {
-        width: 65px;
-        height: 65px;
+        font-size: 28px !important;
     }
 }
 

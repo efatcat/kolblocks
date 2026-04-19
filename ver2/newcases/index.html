@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kolblocks | Классы | Скины | Ауры</title>
+    <title>Kolblocks | ELO & Магазин</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,12 +22,11 @@
         <div class="stat"><span class="stat-label">Комбо:</span><span class="stat-value" id="comboCount">x1</span></div>
         <div class="stat"><span class="stat-label">Здоровье:</span></div>
         <div id="healthBar"><div id="healthFill"></div></div>
-        <div class="stat" id="classDisplay"><span class="stat-label">Класс:</span><span class="stat-value" id="className">Воин</span></div>
     </div>
 
     <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
     <div id="comboDisplay">COMBO x<span id="comboValue">1</span></div>
-    <div id="dashIndicator"><div class="dash-dot active"></div><div class="dash-dot"></div><div class="dash-dot"></div></div>
+    <div id="dashIndicator"><div class="dash-dot active"></div><div class="dash-dot"></div></div>
     <div id="checkpointIndicator">✓ Чекпоинт сохранён!</div>
 
     <div id="levelComplete">
@@ -60,10 +59,9 @@
             <h2>⏸ ПАУЗА</h2>
             <div class="controls-info">
                 <span>← → / A D</span> Движение игрока<br>
-                <span>SPACE / W / ↑</span> Прыжок (2-3 раза!)<br>
-                <span class="highlight">ЛКМ / V</span> Ближний бой (зависит от класса) 💥<br>
-                <span>E</span> Стрельба (только для лучника) 🏹<br>
-                <span>SHIFT / Q</span> Рывок (заряды от класса) ⚡<br>
+                <span>SPACE / W / ↑</span> Прыжок (двойной!)<br>
+                <span class="highlight">ЛКМ / V</span> Ближний бой (удар по площади) 💥<br>
+                <span>SHIFT / Q</span> Рывок (2 заряда) ⚡<br>
                 <span>P / ESC</span> Пауза игры ⏸<br>
                 <span>R</span> Быстрый рестарт 🔄
             </div>
@@ -88,42 +86,23 @@
             </div>
             
             <div class="chests-container">
+                <!-- Обычный кейс -->
                 <div class="chest-card">
                     <div id="chestVisual" class="chest normal-chest">📦</div>
                     <p class="chest-cost">Цена: 10 🔑</p>
                     <button id="openChestBtn" onclick="openChest()">ОТКРЫТЬ</button>
                 </div>
                 
-                <div class="chest-card">
-                    <div id="shapeChestVisual" class="chest shape-chest">⚪</div>
-                    <p class="chest-cost">Цена: 15 🔑</p>
-                    <button id="openShapeChestBtn" onclick="openShapeChest()">ФИГУРЫ</button>
-                </div>
-                
-                <div class="chest-card">
-                    <div id="decoratedChestVisual" class="chest decorated-chest">💎</div>
-                    <p class="chest-cost">Цена: 20 🔑</p>
-                    <button id="openDecoratedChestBtn" onclick="openDecoratedChest()">УКРАШЕНИЯ</button>
-                </div>
-                
+                <!-- Кейс с аурой (теперь за 12 обычных ключей) -->
                 <div class="chest-card">
                     <div id="auraChestVisual" class="chest aura-chest">✨</div>
                     <p class="chest-cost">Цена: 12 🔑</p>
-                    <button id="openAuraChestBtn" onclick="openAuraChest()">АУРЫ</button>
+                    <button id="openAuraChestBtn" onclick="openAuraChest()">ОТКРЫТЬ</button>
                 </div>
             </div>
             
-            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши классы:</h3>
-            <div id="classesGrid" class="skins-grid"></div>
-            
-            <h3 style="color:#ccc; margin: 25px 0 15px;">Обычные скины:</h3>
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши скины:</h3>
             <div id="skinsGrid" class="skins-grid"></div>
-            
-            <h3 style="color:#ccc; margin: 25px 0 15px;">Скины-фигуры:</h3>
-            <div id="shapesGrid" class="skins-grid"></div>
-            
-            <h3 style="color:#ccc; margin: 25px 0 15px;">Украшенные кубы:</h3>
-            <div id="decoratedGrid" class="skins-grid"></div>
             
             <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши ауры (эффект при ударе):</h3>
             <div id="aurasGrid" class="skins-grid"></div>

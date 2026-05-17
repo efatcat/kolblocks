@@ -1,4 +1,4 @@
-// game.js - ПОЛНАЯ РАБОЧАЯ ВЕРСИЯ
+// game.js - ПОЛНАЯ ВЕРСИЯ С ПРАВИЛЬНЫМИ АНИМАЦИЯМИ
 // ==================== КОНФИГУРАЦИЯ ====================
 const CONFIG = {
     player: { width: 40, height: 40, speed: 6, jumpPower: 16, gravity: 0.8, friction: 0.85, dashSpeed: 20, dashDuration: 12, dashCooldown: 45, maxDashes: 2, doubleJump: true },
@@ -20,7 +20,7 @@ const CHEST_SKINS = [
     { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 3 }
 ];
 
-// ВСЕ АУРЫ С ПРАВИЛЬНЫМИ ШАНСАМИ
+// ВСЕ АУРЫ С ШАНСАМИ
 const AURA_SKINS = [
     { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 41 },
     { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 20 },
@@ -33,7 +33,7 @@ const AURA_SKINS = [
     { id: 'lavender_aura', name: 'Лавандовая аура', color: '#E6E6FA', effectColor: 'rgba(230, 230, 250, 0.5)', chance: 3 },
     { id: 'rose_aura', name: 'Розовая аура', color: '#FF69B4', effectColor: 'rgba(255, 105, 180, 0.6)', chance: 2 },
     { id: 'spring_aura', name: 'Весенняя аура', color: '#00FA9A', effectColor: 'rgba(0, 250, 154, 0.6)', chance: 2 },
-    { id: 'explosion_aura', name: 'Взрыв Animated', color: '#FF4500', effectColor: 'rgba(255, 69, 0, 0.8)', chance: 1 }
+    { id: 'explosion_aura', name: 'Взрыв Animated', color: '#FF4500', effectColor: 'rgba(255, 69, 0, 0.8)', chance: 1, isGif: true, image: 'vzryv.gif' }
 ];
 
 // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
@@ -47,6 +47,7 @@ let roundCoins = 0, roundDamage = 0;
 
 let batidaoImage = null;
 let cucumberImage = null;
+let explosionGif = null;
 let activeAuraEffect = null;
 let gameLoopId = null;
 let activeTimeouts = [];
@@ -298,47 +299,42 @@ function openAuraChest() {
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
         
-        // Получаем все доступные ауры (которые ещё не собраны)
-        const availableAuras = AURA_SKINS.filter(a => !unlockedAuras.includes(a.id));
-        let drop = null;
-        
-        if (availableAuras.length === 0) {
-            // Все ауры собраны - возврат ключей
-            totalKeys += 12;
-            saveAllData();
-            if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🎁 Все ауры собраны!', 'Возврат: +12 🔑', '#FFDE7D');
-            if(btn) btn.disabled = false; 
-            renderAuras();
-            return;
-        }
-        
-        // Выбираем случайную ауру из доступных по весу (шансам)
+        // Выбираем случайную ауру по шансам (с возможностью повторки)
         let totalChance = 0;
-        for (let a of availableAuras) {
+        for (let a of AURA_SKINS) {
             totalChance += a.chance;
         }
         let roll = Math.random() * totalChance;
         let cumulative = 0;
-        for (let a of availableAuras) {
+        let drop = null;
+        for (let a of AURA_SKINS) {
             cumulative += a.chance;
             if (roll < cumulative) {
                 drop = a;
                 break;
             }
         }
-        if (!drop) drop = availableAuras[0];
+        if (!drop) drop = AURA_SKINS[0];
         
-        // Добавляем ауру
-        unlockedAuras.push(drop.id);
-        saveAllData();
+        const has = unlockedAuras.includes(drop.id);
         
-        let message = '✨ Новая аура: ' + drop.name + '!';
-        if(drop.id === 'batidao_aura') message = '🔥 НО БАТИДАО! ' + message;
-        if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
-        if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
-        
-        showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        if (has) {
+            // Повторка - возврат 4 ключей
+            const refund = 4;
+            totalKeys += refund;
+            saveAllData();
+            if(keySpan) keySpan.textContent = totalKeys;
+            showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            // Новая аура
+            unlockedAuras.push(drop.id);
+            saveAllData();
+            let message = '✨ Новая аура: ' + drop.name + '!';
+            if(drop.id === 'batidao_aura') message = '🔥 НО БАТИДАО! ' + message;
+            if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
+            if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
+            showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        }
         
         if(btn) btn.disabled = false; 
         renderAuras();
@@ -363,51 +359,46 @@ function openMay2026Chest() {
             a.id === 'cherry_aura' || a.id === 'lavender_aura' || a.id === 'rose_aura' || a.id === 'spring_aura'
         );
         
-        // Получаем ещё не собранные ауры из этого набора
-        const availableAuras = mayAuras.filter(a => !unlockedAuras.includes(a.id));
-        let drop = null;
-        
-        if (availableAuras.length === 0) {
-            // Все ауры мая собраны - возврат ключей
-            totalKeys += 15;
-            saveAllData();
-            if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🎁 Все ауры Мая собраны!', 'Возврат: +15 🔑', '#FF69B4');
-            if(btn) btn.disabled = false; 
-            renderAuras();
-            return;
-        }
-        
-        // Выбираем случайную ауру из доступных
+        // Выбираем случайную ауру из мая по шансам
         let totalChance = 0;
-        for (let a of availableAuras) {
+        for (let a of mayAuras) {
             totalChance += a.chance;
         }
         let roll = Math.random() * totalChance;
         let cumulative = 0;
-        for (let a of availableAuras) {
+        let drop = null;
+        for (let a of mayAuras) {
             cumulative += a.chance;
             if (roll < cumulative) {
                 drop = a;
                 break;
             }
         }
-        if (!drop) drop = availableAuras[0];
+        if (!drop) drop = mayAuras[0];
         
-        // Добавляем ауру
-        unlockedAuras.push(drop.id);
-        saveAllData();
+        const has = unlockedAuras.includes(drop.id);
         
-        let message = '✨ Новая аура: ' + drop.name + '!';
-        if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
-        if(drop.id === 'sunflower_aura') message = '🌻 ПОДСОЛНЕЧНАЯ АУРА! ' + message;
-        if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
-        if(drop.id === 'cherry_aura') message = '🍒 ВИШНЁВАЯ АУРА! ' + message;
-        if(drop.id === 'lavender_aura') message = '💜 ЛАВАНДОВАЯ АУРА! ' + message;
-        if(drop.id === 'rose_aura') message = '🌹 РОЗОВАЯ АУРА! ' + message;
-        if(drop.id === 'spring_aura') message = '🌸 ВЕСЕННЯЯ АУРА! ' + message;
-        
-        showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        if (has) {
+            // Повторка - возврат 5 ключей
+            const refund = 5;
+            totalKeys += refund;
+            saveAllData();
+            if(keySpan) keySpan.textContent = totalKeys;
+            showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            // Новая аура
+            unlockedAuras.push(drop.id);
+            saveAllData();
+            let message = '✨ Новая аура: ' + drop.name + '!';
+            if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
+            if(drop.id === 'sunflower_aura') message = '🌻 ПОДСОЛНЕЧНАЯ АУРА! ' + message;
+            if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
+            if(drop.id === 'cherry_aura') message = '🍒 ВИШНЁВАЯ АУРА! ' + message;
+            if(drop.id === 'lavender_aura') message = '💜 ЛАВАНДОВАЯ АУРА! ' + message;
+            if(drop.id === 'rose_aura') message = '🌹 РОЗОВАЯ АУРА! ' + message;
+            if(drop.id === 'spring_aura') message = '🌸 ВЕСЕННЯЯ АУРА! ' + message;
+            showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        }
         
         if(btn) btn.disabled = false; 
         renderAuras();
@@ -436,9 +427,14 @@ function loadAuraImages() {
     cucumberImg.onload = () => { cucumberImage = cucumberImg; };
     cucumberImg.onerror = () => { cucumberImage = null; };
     cucumberImg.src = 'ogurec.webp';
+    
+    const explosionImg = new Image();
+    explosionImg.onload = () => { explosionGif = explosionImg; };
+    explosionImg.onerror = () => { explosionGif = null; };
+    explosionImg.src = 'vzryv.gif';
 }
 
-// Эффект ауры
+// Эффект ауры (с анимациями как в первой версии)
 function showAuraEffectOnPlayer(x, y, aura) {
     if(activeAuraEffect) { activeAuraEffect.remove(); activeAuraEffect = null; }
     
@@ -449,18 +445,19 @@ function showAuraEffectOnPlayer(x, y, aura) {
     effect.style.zIndex = '200';
     effect.style.borderRadius = '50%';
     
+    // НО БАТИДАО - анимация вращения как в первой версии
     if(aura.id === 'batidao_aura') {
+        effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
         if(batidaoImage) {
-            effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
             effect.style.backgroundImage = `url(${batidaoImage.src})`;
             effect.style.backgroundSize = 'cover';
             effect.style.backgroundPosition = 'center';
             effect.style.backgroundBlend = 'overlay';
-        } else {
-            effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
         }
         effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
         effect.style.animation = 'batidaoAuraPlayer 0.5s ease-out forwards';
+        
+        // Частицы
         for (let i = 0; i < 30; i++) {
             safeTimeout(() => {
                 const particle = document.createElement('div');
@@ -479,6 +476,40 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 10);
         }
     }
+    // ВЗРЫВ ANIMATED - гифка с анимацией
+    else if(aura.id === 'explosion_aura' && explosionGif) {
+        effect.style.background = `radial-gradient(circle, #ff0000, #ff6600, #ffff00, transparent)`;
+        effect.style.backgroundImage = `url(${explosionGif.src})`;
+        effect.style.backgroundSize = 'cover';
+        effect.style.backgroundPosition = 'center';
+        effect.style.backgroundBlend = 'overlay';
+        effect.style.boxShadow = `0 0 80px #ff0000, 0 0 120px #ff6600`;
+        effect.style.animation = 'explosionAuraPlayer 0.6s ease-out forwards';
+        effect.style.width = '400px';
+        effect.style.height = '400px';
+        effect.style.left = (x - 200) + 'px';
+        effect.style.top = (y - 200) + 'px';
+        
+        // Огненные частицы
+        for (let i = 0; i < 50; i++) {
+            safeTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 300) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 300) + 'px';
+                particle.style.width = (Math.random() * 15 + 5) + 'px';
+                particle.style.height = (Math.random() * 15 + 5) + 'px';
+                particle.style.background = `hsl(${Math.random() * 60 + 20}, 100%, 50%)`;
+                particle.style.borderRadius = '50%';
+                particle.style.boxShadow = `0 0 25px #ff6600`;
+                particle.style.pointerEvents = 'none';
+                particle.style.animation = 'particleExplode 0.6s ease-out forwards';
+                document.body.appendChild(particle);
+                safeTimeout(() => particle.remove(), 600);
+            }, i * 8);
+        }
+    }
+    // Огуречная аура
     else if(aura.id === 'cucumber_aura' && cucumberImage) {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
         effect.style.backgroundImage = `url(${cucumberImage.src})`;
@@ -505,6 +536,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 12);
         }
     }
+    // Подсолнечная аура
     else if(aura.id === 'sunflower_aura') {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, #FFD700 30%, transparent 70%)`;
         effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 80px #FFA500`;
@@ -528,6 +560,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 15);
         }
     }
+    // Вишнёвая аура
     else if(aura.id === 'cherry_aura') {
         effect.style.background = `radial-gradient(circle, #ff3366, #ff6699, transparent)`;
         effect.style.boxShadow = `0 0 40px #ff3366`;
@@ -549,6 +582,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 10);
         }
     }
+    // Лавандовая аура
     else if(aura.id === 'lavender_aura') {
         effect.style.background = `radial-gradient(circle, #E6E6FA, #D8BFD8, transparent)`;
         effect.style.boxShadow = `0 0 40px #D8BFD8`;
@@ -570,6 +604,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 15);
         }
     }
+    // Розовая аура
     else if(aura.id === 'rose_aura') {
         effect.style.background = `radial-gradient(circle, #FF69B4, #FF1493, transparent)`;
         effect.style.boxShadow = `0 0 40px #FF69B4`;
@@ -591,6 +626,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 15);
         }
     }
+    // Весенняя аура
     else if(aura.id === 'spring_aura') {
         effect.style.background = `radial-gradient(circle, #00FA9A, #3CB371, transparent)`;
         effect.style.boxShadow = `0 0 40px #00FA9A`;
@@ -612,32 +648,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 10);
         }
     }
-    else if(aura.id === 'explosion_aura') {
-        effect.style.background = `radial-gradient(circle, #ff0000, #ff6600, #ffff00, transparent)`;
-        effect.style.boxShadow = `0 0 80px #ff0000, 0 0 120px #ff6600`;
-        effect.style.animation = 'explosionAuraPlayer 0.6s ease-out forwards';
-        effect.style.width = '400px';
-        effect.style.height = '400px';
-        effect.style.left = (x - 200) + 'px';
-        effect.style.top = (y - 200) + 'px';
-        for (let i = 0; i < 50; i++) {
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 300) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 300) + 'px';
-                particle.style.width = (Math.random() * 15 + 5) + 'px';
-                particle.style.height = (Math.random() * 15 + 5) + 'px';
-                particle.style.background = `hsl(${Math.random() * 60 + 20}, 100%, 50%)`;
-                particle.style.borderRadius = '50%';
-                particle.style.boxShadow = `0 0 25px #ff6600`;
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.6s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 600);
-            }, i * 8);
-        }
-    }
+    // Обычные ауры (Огненная, Ледяная, Электрическая, Космическая)
     else {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
         effect.style.boxShadow = `0 0 40px ${aura.color}`;

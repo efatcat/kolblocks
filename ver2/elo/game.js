@@ -20,16 +20,20 @@ const CHEST_SKINS = [
     { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 3 }
 ];
 
-// НОВЫЕ ШАНСЫ
+// ВСЕ АУРЫ С ПРАВИЛЬНЫМИ ШАНСАМИ
 const AURA_SKINS = [
     { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 41 },
-    { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 25 },
-    { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 12 },
-    { id: 'cosmic_aura', name: 'Космическая аура', color: '#9b59b6', effectColor: 'rgba(155, 89, 182, 0.6)', chance: 8 },
+    { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 20 },
+    { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 10 },
+    { id: 'cosmic_aura', name: 'Космическая аура', color: '#9b59b6', effectColor: 'rgba(155, 89, 182, 0.6)', chance: 7 },
     { id: 'batidao_aura', name: 'Но батидао', color: '#ff0000', effectColor: 'rgba(255, 0, 0, 0.8)', chance: 5, image: 'batidao.png' },
     { id: 'cucumber_aura', name: 'Огуречная аура', color: '#7CFC00', effectColor: 'rgba(124, 252, 0, 0.7)', chance: 4, image: 'ogurec.webp' },
     { id: 'sunflower_aura', name: 'Подсолнечная аура', color: '#FFD700', effectColor: 'rgba(255, 215, 0, 0.6)', chance: 3 },
-    { id: 'explosion_aura', name: 'Взрыв Animated', color: '#FF4500', effectColor: 'rgba(255, 69, 0, 0.8)', chance: 2 }
+    { id: 'cherry_aura', name: 'Вишнёвая аура', color: '#DC143C', effectColor: 'rgba(220, 20, 60, 0.6)', chance: 3 },
+    { id: 'lavender_aura', name: 'Лавандовая аура', color: '#E6E6FA', effectColor: 'rgba(230, 230, 250, 0.5)', chance: 3 },
+    { id: 'rose_aura', name: 'Розовая аура', color: '#FF69B4', effectColor: 'rgba(255, 105, 180, 0.6)', chance: 2 },
+    { id: 'spring_aura', name: 'Весенняя аура', color: '#00FA9A', effectColor: 'rgba(0, 250, 154, 0.6)', chance: 2 },
+    { id: 'explosion_aura', name: 'Взрыв Animated', color: '#FF4500', effectColor: 'rgba(255, 69, 0, 0.8)', chance: 1 }
 ];
 
 // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
@@ -293,32 +297,49 @@ function openAuraChest() {
     AudioSys.chestOpen();
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
-        let roll = Math.random() * 100;
-        let cumulative = 0;
+        
+        // Получаем все доступные ауры (которые ещё не собраны)
+        const availableAuras = AURA_SKINS.filter(a => !unlockedAuras.includes(a.id));
         let drop = null;
-        for (let a of AURA_SKINS) {
-            cumulative += a.chance;
-            if (roll < cumulative) { drop = a; break; }
-        }
-        if (!drop) drop = AURA_SKINS[0];
-        const has = unlockedAuras.includes(drop.id);
-        const allAurasUnlocked = AURA_SKINS.every(aura => unlockedAuras.includes(aura.id));
-        if (allAurasUnlocked) {
+        
+        if (availableAuras.length === 0) {
+            // Все ауры собраны - возврат ключей
             totalKeys += 12;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
             showResult('🎁 Все ауры собраны!', 'Возврат: +12 🔑', '#FFDE7D');
-        } else if (has) {
-            const refund = 4;
-            totalKeys += refund;
-            saveAllData();
-            if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🔄 Повторка ауры: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
-        } else {
-            unlockedAuras.push(drop.id);
-            saveAllData();
-            showResult('✨ Новая аура: ' + drop.name + '!', 'Теперь при ударе будет эффект!', drop.color);
+            if(btn) btn.disabled = false; 
+            renderAuras();
+            return;
         }
+        
+        // Выбираем случайную ауру из доступных по весу (шансам)
+        let totalChance = 0;
+        for (let a of availableAuras) {
+            totalChance += a.chance;
+        }
+        let roll = Math.random() * totalChance;
+        let cumulative = 0;
+        for (let a of availableAuras) {
+            cumulative += a.chance;
+            if (roll < cumulative) {
+                drop = a;
+                break;
+            }
+        }
+        if (!drop) drop = availableAuras[0];
+        
+        // Добавляем ауру
+        unlockedAuras.push(drop.id);
+        saveAllData();
+        
+        let message = '✨ Новая аура: ' + drop.name + '!';
+        if(drop.id === 'batidao_aura') message = '🔥 НО БАТИДАО! ' + message;
+        if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
+        if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
+        
+        showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        
         if(btn) btn.disabled = false; 
         renderAuras();
     }, 1200);
@@ -335,37 +356,59 @@ function openMay2026Chest() {
     AudioSys.chestOpen();
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
-        const mayAuras = AURA_SKINS.filter(a => a.id === 'cucumber_aura' || a.id === 'sunflower_aura' || a.id === 'explosion_aura');
-        let roll = Math.random() * 100;
-        let cumulative = 0;
+        
+        // Ауры Май 2026
+        const mayAuras = AURA_SKINS.filter(a => 
+            a.id === 'cucumber_aura' || a.id === 'sunflower_aura' || a.id === 'explosion_aura' ||
+            a.id === 'cherry_aura' || a.id === 'lavender_aura' || a.id === 'rose_aura' || a.id === 'spring_aura'
+        );
+        
+        // Получаем ещё не собранные ауры из этого набора
+        const availableAuras = mayAuras.filter(a => !unlockedAuras.includes(a.id));
         let drop = null;
-        for (let a of mayAuras) {
-            cumulative += a.chance;
-            if (roll < cumulative) { drop = a; break; }
-        }
-        if (!drop) drop = mayAuras[0];
-        const has = unlockedAuras.includes(drop.id);
-        const allMayAurasUnlocked = mayAuras.every(aura => unlockedAuras.includes(aura.id));
-        if (allMayAurasUnlocked) {
+        
+        if (availableAuras.length === 0) {
+            // Все ауры мая собраны - возврат ключей
             totalKeys += 15;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
             showResult('🎁 Все ауры Мая собраны!', 'Возврат: +15 🔑', '#FF69B4');
-        } else if (has) {
-            const refund = 5;
-            totalKeys += refund;
-            saveAllData();
-            if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🔄 Повторка ауры: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
-        } else {
-            unlockedAuras.push(drop.id);
-            saveAllData();
-            let message = '✨ Новая аура: ' + drop.name + '!';
-            if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
-            if(drop.id === 'sunflower_aura') message = '🌻 ПОДСОЛНЕЧНАЯ АУРА! ' + message;
-            if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
-            showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+            if(btn) btn.disabled = false; 
+            renderAuras();
+            return;
         }
+        
+        // Выбираем случайную ауру из доступных
+        let totalChance = 0;
+        for (let a of availableAuras) {
+            totalChance += a.chance;
+        }
+        let roll = Math.random() * totalChance;
+        let cumulative = 0;
+        for (let a of availableAuras) {
+            cumulative += a.chance;
+            if (roll < cumulative) {
+                drop = a;
+                break;
+            }
+        }
+        if (!drop) drop = availableAuras[0];
+        
+        // Добавляем ауру
+        unlockedAuras.push(drop.id);
+        saveAllData();
+        
+        let message = '✨ Новая аура: ' + drop.name + '!';
+        if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
+        if(drop.id === 'sunflower_aura') message = '🌻 ПОДСОЛНЕЧНАЯ АУРА! ' + message;
+        if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
+        if(drop.id === 'cherry_aura') message = '🍒 ВИШНЁВАЯ АУРА! ' + message;
+        if(drop.id === 'lavender_aura') message = '💜 ЛАВАНДОВАЯ АУРА! ' + message;
+        if(drop.id === 'rose_aura') message = '🌹 РОЗОВАЯ АУРА! ' + message;
+        if(drop.id === 'spring_aura') message = '🌸 ВЕСЕННЯЯ АУРА! ' + message;
+        
+        showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        
         if(btn) btn.disabled = false; 
         renderAuras();
     }, 1200);
@@ -376,6 +419,7 @@ function showResult(title, text, col) {
     if(!r) return;
     document.getElementById('resultTitle').textContent = title; 
     document.getElementById('resultText').textContent = text;
+    if (col && r.querySelector('h3')) r.querySelector('h3').style.color = col;
     r.style.display = 'block';
 }
 
@@ -405,12 +449,16 @@ function showAuraEffectOnPlayer(x, y, aura) {
     effect.style.zIndex = '200';
     effect.style.borderRadius = '50%';
     
-    if(aura.id === 'batidao_aura' && batidaoImage) {
-        effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
-        effect.style.backgroundImage = `url(${batidaoImage.src})`;
-        effect.style.backgroundSize = 'cover';
-        effect.style.backgroundPosition = 'center';
-        effect.style.backgroundBlend = 'overlay';
+    if(aura.id === 'batidao_aura') {
+        if(batidaoImage) {
+            effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
+            effect.style.backgroundImage = `url(${batidaoImage.src})`;
+            effect.style.backgroundSize = 'cover';
+            effect.style.backgroundPosition = 'center';
+            effect.style.backgroundBlend = 'overlay';
+        } else {
+            effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
+        }
         effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
         effect.style.animation = 'batidaoAuraPlayer 0.5s ease-out forwards';
         for (let i = 0; i < 30; i++) {
@@ -478,6 +526,90 @@ function showAuraEffectOnPlayer(x, y, aura) {
                 document.body.appendChild(particle);
                 safeTimeout(() => particle.remove(), 500);
             }, i * 15);
+        }
+    }
+    else if(aura.id === 'cherry_aura') {
+        effect.style.background = `radial-gradient(circle, #ff3366, #ff6699, transparent)`;
+        effect.style.boxShadow = `0 0 40px #ff3366`;
+        effect.style.animation = 'cherryAuraPlayer 0.4s ease-out forwards';
+        for (let i = 0; i < 20; i++) {
+            safeTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.width = '8px';
+                particle.style.height = '8px';
+                particle.style.background = '#ff0000';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.animation = 'particleExplode 0.4s ease-out forwards';
+                document.body.appendChild(particle);
+                safeTimeout(() => particle.remove(), 400);
+            }, i * 10);
+        }
+    }
+    else if(aura.id === 'lavender_aura') {
+        effect.style.background = `radial-gradient(circle, #E6E6FA, #D8BFD8, transparent)`;
+        effect.style.boxShadow = `0 0 40px #D8BFD8`;
+        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
+        for (let i = 0; i < 15; i++) {
+            safeTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 180) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 180) + 'px';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = '#DDA0DD';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.animation = 'particleExplode 0.4s ease-out forwards';
+                document.body.appendChild(particle);
+                safeTimeout(() => particle.remove(), 400);
+            }, i * 15);
+        }
+    }
+    else if(aura.id === 'rose_aura') {
+        effect.style.background = `radial-gradient(circle, #FF69B4, #FF1493, transparent)`;
+        effect.style.boxShadow = `0 0 40px #FF69B4`;
+        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
+        for (let i = 0; i < 15; i++) {
+            safeTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 160) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 160) + 'px';
+                particle.style.width = '10px';
+                particle.style.height = '10px';
+                particle.style.background = '#FFB6C1';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
+                document.body.appendChild(particle);
+                safeTimeout(() => particle.remove(), 500);
+            }, i * 15);
+        }
+    }
+    else if(aura.id === 'spring_aura') {
+        effect.style.background = `radial-gradient(circle, #00FA9A, #3CB371, transparent)`;
+        effect.style.boxShadow = `0 0 40px #00FA9A`;
+        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
+        for (let i = 0; i < 25; i++) {
+            safeTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.width = (Math.random() * 8 + 4) + 'px';
+                particle.style.height = (Math.random() * 8 + 4) + 'px';
+                particle.style.background = `hsl(${Math.random() * 120 + 60}, 100%, 60%)`;
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
+                document.body.appendChild(particle);
+                safeTimeout(() => particle.remove(), 500);
+            }, i * 10);
         }
     }
     else if(aura.id === 'explosion_aura') {

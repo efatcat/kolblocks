@@ -1,4 +1,4 @@
-// game.js - ПОЛНАЯ ВЕРСИЯ С АНИМАЦИЕЙ batidao.png
+// game.js - ПОЛНАЯ ВЕРСИЯ С ПРАВИЛЬНЫМИ АНИМАЦИЯМИ
 // ==================== КОНФИГУРАЦИЯ ====================
 const CONFIG = {
     player: { width: 40, height: 40, speed: 6, jumpPower: 16, gravity: 0.8, friction: 0.85, dashSpeed: 20, dashDuration: 12, dashCooldown: 45, maxDashes: 2, doubleJump: true },
@@ -299,6 +299,7 @@ function openAuraChest() {
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
         
+        // Выбираем случайную ауру по шансам (с возможностью повторки)
         let totalChance = 0;
         for (let a of AURA_SKINS) {
             totalChance += a.chance;
@@ -318,12 +319,14 @@ function openAuraChest() {
         const has = unlockedAuras.includes(drop.id);
         
         if (has) {
+            // Повторка - возврат 4 ключей
             const refund = 4;
             totalKeys += refund;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
             showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
         } else {
+            // Новая аура
             unlockedAuras.push(drop.id);
             saveAllData();
             let message = '✨ Новая аура: ' + drop.name + '!';
@@ -350,11 +353,13 @@ function openMay2026Chest() {
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
         
+        // Ауры Май 2026
         const mayAuras = AURA_SKINS.filter(a => 
             a.id === 'cucumber_aura' || a.id === 'sunflower_aura' || a.id === 'explosion_aura' ||
             a.id === 'cherry_aura' || a.id === 'lavender_aura' || a.id === 'rose_aura' || a.id === 'spring_aura'
         );
         
+        // Выбираем случайную ауру из мая по шансам
         let totalChance = 0;
         for (let a of mayAuras) {
             totalChance += a.chance;
@@ -374,12 +379,14 @@ function openMay2026Chest() {
         const has = unlockedAuras.includes(drop.id);
         
         if (has) {
+            // Повторка - возврат 5 ключей
             const refund = 5;
             totalKeys += refund;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
             showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
         } else {
+            // Новая аура
             unlockedAuras.push(drop.id);
             saveAllData();
             let message = '✨ Новая аура: ' + drop.name + '!';
@@ -409,33 +416,27 @@ function showResult(title, text, col) {
 
 function hideResult() { const r = document.getElementById('chestResult'); if(r) r.style.display = 'none'; }
 
-// Загрузка изображений для аур
+// Загрузка изображений
 function loadAuraImages() {
-    // Но батидао
     const batidaoImg = new Image();
     batidaoImg.onload = () => { batidaoImage = batidaoImg; };
-    batidaoImg.onerror = () => { batidaoImage = null; console.log('batidao.png не загружен'); };
+    batidaoImg.onerror = () => { batidaoImage = null; };
     batidaoImg.src = 'batidao.png';
     
-    // Огурец
     const cucumberImg = new Image();
     cucumberImg.onload = () => { cucumberImage = cucumberImg; };
     cucumberImg.onerror = () => { cucumberImage = null; };
     cucumberImg.src = 'ogurec.webp';
     
-    // Взрыв GIF
     const explosionImg = new Image();
     explosionImg.onload = () => { explosionGif = explosionImg; };
     explosionImg.onerror = () => { explosionGif = null; };
     explosionImg.src = 'vzryv.gif';
 }
 
-// ==================== ФУНКЦИЯ ПОКАЗА ЭФФЕКТА АУРЫ ====================
+// Эффект ауры (с анимациями как в первой версии)
 function showAuraEffectOnPlayer(x, y, aura) {
-    if(activeAuraEffect) {
-        activeAuraEffect.remove();
-        activeAuraEffect = null;
-    }
+    if(activeAuraEffect) { activeAuraEffect.remove(); activeAuraEffect = null; }
     
     const effect = document.createElement('div');
     effect.className = 'aura-effect player-aura';
@@ -456,7 +457,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
         effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
         effect.style.animation = 'batidaoAuraPlayer 0.5s ease-out forwards';
         
-        // Красные частицы
+        // Частицы
         for (let i = 0; i < 30; i++) {
             safeTimeout(() => {
                 const particle = document.createElement('div');
@@ -469,14 +470,13 @@ function showAuraEffectOnPlayer(x, y, aura) {
                 particle.style.borderRadius = '50%';
                 particle.style.boxShadow = `0 0 15px ${aura.color}`;
                 particle.style.pointerEvents = 'none';
-                particle.style.zIndex = '199';
                 particle.style.animation = 'particleExplode 0.5s ease-out forwards';
                 document.body.appendChild(particle);
                 safeTimeout(() => particle.remove(), 500);
             }, i * 10);
         }
     }
-    // ВЗРЫВ ANIMATED
+    // ВЗРЫВ ANIMATED - гифка с анимацией
     else if(aura.id === 'explosion_aura' && explosionGif) {
         effect.style.background = `radial-gradient(circle, #ff0000, #ff6600, #ffff00, transparent)`;
         effect.style.backgroundImage = `url(${explosionGif.src})`;
@@ -490,6 +490,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
         effect.style.left = (x - 200) + 'px';
         effect.style.top = (y - 200) + 'px';
         
+        // Огненные частицы
         for (let i = 0; i < 50; i++) {
             safeTimeout(() => {
                 const particle = document.createElement('div');
@@ -662,6 +663,8 @@ function showAuraEffectOnPlayer(x, y, aura) {
     activeAuraEffect = effect;
     safeTimeout(() => { if(activeAuraEffect) { activeAuraEffect.remove(); activeAuraEffect = null; } }, 500);
 }
+
+console.log('Game.js loaded - Ауры с анимациями');
 
 // ==================== КЛАСС PLAYER ====================
 class Player {

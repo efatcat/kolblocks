@@ -1,4 +1,4 @@
-// game.js - ПОЛНАЯ ВЕРСИЯ С ПРАВИЛЬНЫМИ АНИМАЦИЯМИ
+// game.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 // ==================== КОНФИГУРАЦИЯ ====================
 const CONFIG = {
     player: { width: 40, height: 40, speed: 6, jumpPower: 16, gravity: 0.8, friction: 0.85, dashSpeed: 20, dashDuration: 12, dashCooldown: 45, maxDashes: 2, doubleJump: true },
@@ -20,7 +20,6 @@ const CHEST_SKINS = [
     { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 3 }
 ];
 
-// ВСЕ АУРЫ С ШАНСАМИ
 const AURA_SKINS = [
     { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 41 },
     { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 20 },
@@ -299,7 +298,6 @@ function openAuraChest() {
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
         
-        // Выбираем случайную ауру по шансам (с возможностью повторки)
         let totalChance = 0;
         for (let a of AURA_SKINS) {
             totalChance += a.chance;
@@ -319,14 +317,12 @@ function openAuraChest() {
         const has = unlockedAuras.includes(drop.id);
         
         if (has) {
-            // Повторка - возврат 4 ключей
             const refund = 4;
             totalKeys += refund;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
             showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
         } else {
-            // Новая аура
             unlockedAuras.push(drop.id);
             saveAllData();
             let message = '✨ Новая аура: ' + drop.name + '!';
@@ -353,13 +349,11 @@ function openMay2026Chest() {
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
         
-        // Ауры Май 2026
         const mayAuras = AURA_SKINS.filter(a => 
             a.id === 'cucumber_aura' || a.id === 'sunflower_aura' || a.id === 'explosion_aura' ||
             a.id === 'cherry_aura' || a.id === 'lavender_aura' || a.id === 'rose_aura' || a.id === 'spring_aura'
         );
         
-        // Выбираем случайную ауру из мая по шансам
         let totalChance = 0;
         for (let a of mayAuras) {
             totalChance += a.chance;
@@ -379,14 +373,12 @@ function openMay2026Chest() {
         const has = unlockedAuras.includes(drop.id);
         
         if (has) {
-            // Повторка - возврат 5 ключей
             const refund = 5;
             totalKeys += refund;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
             showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
         } else {
-            // Новая аура
             unlockedAuras.push(drop.id);
             saveAllData();
             let message = '✨ Новая аура: ' + drop.name + '!';
@@ -416,7 +408,6 @@ function showResult(title, text, col) {
 
 function hideResult() { const r = document.getElementById('chestResult'); if(r) r.style.display = 'none'; }
 
-// Загрузка изображений
 function loadAuraImages() {
     const batidaoImg = new Image();
     batidaoImg.onload = () => { batidaoImage = batidaoImg; };
@@ -434,9 +425,11 @@ function loadAuraImages() {
     explosionImg.src = 'vzryv.gif';
 }
 
-// Эффект ауры (с анимациями как в первой версии)
 function showAuraEffectOnPlayer(x, y, aura) {
-    if(activeAuraEffect) { activeAuraEffect.remove(); activeAuraEffect = null; }
+    if(activeAuraEffect) {
+        activeAuraEffect.remove();
+        activeAuraEffect = null;
+    }
     
     const effect = document.createElement('div');
     effect.className = 'aura-effect player-aura';
@@ -445,7 +438,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
     effect.style.zIndex = '200';
     effect.style.borderRadius = '50%';
     
-    // НО БАТИДАО - анимация вращения как в первой версии
+    // НО БАТИДАО - как огуречная, но красная
     if(aura.id === 'batidao_aura') {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
         if(batidaoImage) {
@@ -457,7 +450,6 @@ function showAuraEffectOnPlayer(x, y, aura) {
         effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 100px ${aura.color}`;
         effect.style.animation = 'batidaoAuraPlayer 0.5s ease-out forwards';
         
-        // Частицы
         for (let i = 0; i < 30; i++) {
             safeTimeout(() => {
                 const particle = document.createElement('div');
@@ -470,13 +462,14 @@ function showAuraEffectOnPlayer(x, y, aura) {
                 particle.style.borderRadius = '50%';
                 particle.style.boxShadow = `0 0 15px ${aura.color}`;
                 particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '199';
                 particle.style.animation = 'particleExplode 0.5s ease-out forwards';
                 document.body.appendChild(particle);
                 safeTimeout(() => particle.remove(), 500);
             }, i * 10);
         }
     }
-    // ВЗРЫВ ANIMATED - гифка с анимацией
+    // ВЗРЫВ ANIMATED
     else if(aura.id === 'explosion_aura' && explosionGif) {
         effect.style.background = `radial-gradient(circle, #ff0000, #ff6600, #ffff00, transparent)`;
         effect.style.backgroundImage = `url(${explosionGif.src})`;
@@ -490,7 +483,6 @@ function showAuraEffectOnPlayer(x, y, aura) {
         effect.style.left = (x - 200) + 'px';
         effect.style.top = (y - 200) + 'px';
         
-        // Огненные частицы
         for (let i = 0; i < 50; i++) {
             safeTimeout(() => {
                 const particle = document.createElement('div');
@@ -648,7 +640,7 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 10);
         }
     }
-    // Обычные ауры (Огненная, Ледяная, Электрическая, Космическая)
+    // Обычные ауры
     else {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
         effect.style.boxShadow = `0 0 40px ${aura.color}`;
@@ -664,7 +656,154 @@ function showAuraEffectOnPlayer(x, y, aura) {
     safeTimeout(() => { if(activeAuraEffect) { activeAuraEffect.remove(); activeAuraEffect = null; } }, 500);
 }
 
-console.log('Game.js loaded - Ауры с анимациями');
+// ==================== КЛАСС PLAYER ====================
+class Player {
+    constructor() { this.reset(); }
+    reset() {
+        this.width = CONFIG.player.width; this.height = CONFIG.player.height;
+        this.x = 100; this.y = 200; this.velX = 0; this.velY = 0; this.jumping = false; this.jumpCount = 0;
+        this.color = '#4af626'; this.speed = CONFIG.player.speed; this.jumpPower = CONFIG.player.jumpPower;
+        this.gravity = CONFIG.player.gravity; this.friction = CONFIG.player.friction;
+        this.trail = []; this.maxTrail = 8; this.invulnerable = 0;
+        this.dashCharges = CONFIG.player.maxDashes; this.dashCooldown = 0; this.isDashing = false;
+        this.dashTimer = 0; this.dashDirection = 1; this.lastCheckpoint = { x: 100, y: 200 };
+        this.meleeCooldown = 0; this.swingEffect = 0;
+        return this;
+    }
+    update(keys) {
+        if (this.invulnerable > 0) this.invulnerable--; 
+        if (this.dashCooldown > 0) this.dashCooldown--;
+        if (this.meleeCooldown > 0) this.meleeCooldown--;
+        if (this.swingEffect > 0) this.swingEffect--;
+        
+        if (!this.isDashing) { this.trail.push({x: this.x, y: this.y}); if (this.trail.length > this.maxTrail) this.trail.shift(); }
+        if (this.isDashing) { this.dashTimer--; this.x += CONFIG.player.dashSpeed * this.dashDirection; if (this.dashTimer <= 0) { this.isDashing = false; this.velY = 0; } return; }
+        this.velY += this.gravity;
+        if (keys['ArrowLeft'] || keys['a'] || keys['ф']) { this.velX = -this.speed; this.dashDirection = -1; }
+        else if (keys['ArrowRight'] || keys['d'] || keys['в']) { this.velX = this.speed; this.dashDirection = 1; }
+        else { this.velX *= this.friction; }
+        if ((keys[' '] || keys['ArrowUp'] || keys['w'] || keys['ц']) && this.jumpCount < 2) {
+            if (!this.jumping || CONFIG.player.doubleJump) {
+                this.velY = -this.jumpPower; this.jumping = true; this.jumpCount++; this.createJumpParticles(); AudioSys.jump();
+                keys[' '] = false; keys['ArrowUp'] = false; keys['w'] = false; keys['ц'] = false;
+            }
+        }
+        if ((keys['Shift'] || keys['shift'] || keys['q'] || keys['й']) && this.dashCharges > 0 && this.dashCooldown <= 0) { this.startDash(); keys['Shift'] = false; keys['shift'] = false; keys['q'] = false; keys['й'] = false; }
+        this.x += this.velX; this.y += this.velY;
+        this.x = Math.max(cameraX + 50, Math.min(this.x, cameraX + canvas.width - 50 - this.width));
+        if (this.y > canvas.height + 200) { this.respawn(); return; }
+        this.checkPlatformCollisions();
+    }
+    startDash() {
+        this.isDashing = true; this.dashTimer = CONFIG.player.dashDuration; this.dashCharges--; this.dashCooldown = CONFIG.player.dashCooldown; this.invulnerable = 15; this.velY = 0; AudioSys.dash();
+        for (let i = 0; i < 20; i++) particlePool.acquire(this.x + this.width/2 + Math.random()*20 - 10, this.y + this.height/2 + Math.random()*20 - 10, '#FFDE7D');
+        updateDashIndicator();
+    }
+    meleeAttack() {
+        if (this.meleeCooldown > 0 || !gameRunning) return;
+        this.meleeCooldown = CONFIG.melee.cooldownMax;
+        this.swingEffect = 8;
+        AudioSys.meleeSwing();
+        const centerX = this.x + this.width/2;
+        const centerY = this.y + this.height/2;
+        
+        if (equippedAura) {
+            const aura = getAuraData(equippedAura);
+            if (aura) {
+                const screenX = centerX - cameraX;
+                const screenY = centerY;
+                showAuraEffectOnPlayer(screenX, screenY, aura);
+            }
+        }
+        
+        let hitSomething = false;
+        for (let i = 0; i < enemies.length; i++) {
+            const e = enemies[i];
+            if (!e.active) continue;
+            const enemyCenterX = e.x + e.width/2, enemyCenterY = e.y + e.height/2;
+            const dist = Math.hypot(centerX - enemyCenterX, centerY - enemyCenterY);
+            if (dist < CONFIG.melee.radius) {
+                if (e.takeDamage()) { enemies = enemies.filter(x => x !== e); }
+                hitSomething = true;
+                updateCombo();
+                this.createHitEffect(enemyCenterX, enemyCenterY);
+            }
+        }
+        for (let i = 0; i < flyingEnemies.length; i++) {
+            const fe = flyingEnemies[i];
+            if (!fe.active) continue;
+            const feCenterX = fe.x + fe.width/2, feCenterY = fe.y + fe.height/2;
+            const dist = Math.hypot(centerX - feCenterX, centerY - feCenterY);
+            if (dist < CONFIG.melee.radius) {
+                if (fe.takeDamage()) { flyingEnemies = flyingEnemies.filter(x => x !== fe); }
+                hitSomething = true;
+                updateCombo();
+                this.createHitEffect(feCenterX, feCenterY);
+            }
+        }
+        if (boss && boss.active) {
+            const bossCenterX = boss.x + boss.width/2, bossCenterY = boss.y + boss.height/2;
+            const dist = Math.hypot(centerX - bossCenterX, centerY - bossCenterY);
+            if (dist < CONFIG.melee.radius + 15) {
+                if (boss.takeDamage()) { boss = null; document.getElementById('bossHealthBar').style.display = 'none'; }
+                hitSomething = true;
+                updateCombo();
+                this.createHitEffect(bossCenterX, bossCenterY);
+                AudioSys.bossHit();
+            }
+        }
+        if (hitSomething) {
+            for (let i = 0; i < 25; i++) particlePool.acquire(centerX + (Math.random() - 0.5)*40, centerY + (Math.random() - 0.5)*40, '#ffaa33');
+            shakeScreen(3);
+        }
+    }
+    createHitEffect(x, y) { for (let i = 0; i < 15; i++) particlePool.acquire(x + (Math.random() - 0.5)*20, y + (Math.random() - 0.5)*20, '#ff5500'); }
+    createJumpParticles() { for (let i = 0; i < 12; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height, '#4af626'); }
+    createLandParticles() { for (let i = 0; i < 8; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height, '#08D9D6'); }
+    checkPlatformCollisions() {
+        let onGround = false;
+        for (let platform of platforms) {
+            if (this.checkCollision(platform)) {
+                if (this.velY > 0 && this.y + this.height - this.velY <= platform.y + 10) {
+                    this.y = platform.y - this.height; this.velY = 0;
+                    if (this.jumping) { this.createLandParticles(); this.jumping = false; }
+                    this.jumpCount = 0; onGround = true;
+                    if (platform.type === 'breaking' && !platform.broken) platform.breakTimer = 60;
+                }
+            }
+        }
+        if (onGround) this.jumpCount = 0;
+    }
+    checkCollision(obj) { return this.x < obj.x + obj.width && this.x + this.width > obj.x && this.y < obj.y + obj.height && this.y + this.height > obj.y; }
+    takeDamage(amount, knockbackX, knockbackY, color) {
+        if (this.invulnerable > 0 || this.isDashing) return false;
+        playerHealth = Math.max(0, playerHealth - amount); updateHealthBar(); this.knockback(knockbackX, knockbackY);
+        this.invulnerable = 45; AudioSys.hit();
+        roundDamage += amount;
+        for (let i = 0; i < 15; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height/2, color || '#ff2e63');
+        if (playerHealth <= 0) { gameOver(); return true; } return false;
+    }
+    knockback(x, y) { this.velX = x; this.velY = y; this.jumping = true; }
+    respawn() { this.takeDamage(30); this.x = this.lastCheckpoint.x; this.y = this.lastCheckpoint.y; this.velX = 0; this.velY = 0; this.jumping = false; this.jumpCount = 0; this.invulnerable = 90; for (let i = 0; i < 25; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height/2, '#FF2E63'); shakeScreen(5); }
+    saveCheckpoint() { this.lastCheckpoint = { x: this.x, y: this.y }; showCheckpointIndicator(); AudioSys.checkpoint(); }
+    draw(ctx, cameraX) {
+        const skin = getSkinData(equippedSkin);
+        for (let i = 0; i < this.trail.length; i++) { ctx.globalAlpha = i / this.trail.length * 0.25; ctx.fillStyle = this.isDashing ? '#FFDE7D' : skin.color; ctx.fillRect(this.trail[i].x - cameraX, this.trail[i].y, this.width, this.height); }
+        ctx.globalAlpha = 1; ctx.fillStyle = skin.color; const drawX = this.x - cameraX;
+        if (this.isDashing) { ctx.shadowColor = skin.color; ctx.shadowBlur = 20; ctx.fillRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0; }
+        else { ctx.fillRect(drawX, this.y, this.width, this.height); }
+        ctx.fillStyle = '#222'; ctx.fillRect(drawX + 10, this.y + 10, 8, 8); ctx.fillRect(drawX + 22, this.y + 10, 8, 8); ctx.fillRect(drawX + 10, this.y + 25, 20, 4);
+        ctx.strokeStyle = this.invulnerable > 0 && Math.floor(this.invulnerable/4)%2===0 ? '#fff' : skin.color; ctx.lineWidth = 2; ctx.strokeRect(drawX, this.y, this.width, this.height);
+        if (['magma','royal'].includes(skin.id)) { ctx.shadowColor = skin.color; ctx.shadowBlur = 15; ctx.strokeRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0; }
+        if (this.swingEffect > 0) {
+            ctx.beginPath(); ctx.arc(drawX + this.width/2, this.y + this.height/2, CONFIG.melee.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 80, 40, ${0.3 * (this.swingEffect / 8)})`; ctx.fill();
+            ctx.beginPath(); ctx.arc(drawX + this.width/2, this.y + this.height/2, CONFIG.melee.radius - 10, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 0, 0.5)`; ctx.fill();
+        }
+        if (this.jumpCount === 1 && !this.jumping) { ctx.fillStyle = 'rgba(8, 217, 214, 0.7)'; ctx.beginPath(); ctx.arc(drawX + this.width/2, this.y - 8, 5, 0, Math.PI*2); ctx.fill(); }
+    }
+}
 
 // ==================== КЛАСС PLAYER ====================
 class Player {

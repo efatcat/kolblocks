@@ -1,4 +1,4 @@
-// game.js - ПОЛНАЯ ВЕРСИЯ С REGISTRATION
+// game.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (без бесконечной загрузки)
 
 // ==================== КОНФИГУРАЦИЯ ====================
 const CONFIG = {
@@ -16,7 +16,7 @@ const CONFIG = {
 
 // ==================== SUPABASE НАСТРОЙКИ ====================
 // ⚠️ ЗАМЕНИТЕ НА ВАШИ ДАННЫЕ ИЗ SUPABASE! ⚠️
-const SUPABASE_URL = 'https://cfpikiovxphggrakdrqe.supabase.co'
+const SUPABASE_URL = 'https://cfpikiovxphggradkqre.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmcGlraW92eHBoZ2dyYWtkcnFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNTk1NTYsImV4cCI6MjA5NDgzNTU1Nn0.MKBQWBK1N21bWRM5iALy9B8inmPJsMP12BNrmZAQgQk'
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -520,139 +520,6 @@ function showAuraEffectOnPlayer(x, y, aura) {
             }, i * 8);
         }
     }
-    else if(aura.id === 'cucumber_aura' && cucumberImage) {
-        effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, transparent 70%)`;
-        effect.style.backgroundImage = `url(${cucumberImage.src})`;
-        effect.style.backgroundSize = 'cover';
-        effect.style.backgroundPosition = 'center';
-        effect.style.backgroundBlend = 'overlay';
-        effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 80px ${aura.color}`;
-        effect.style.animation = 'cucumberAuraPlayer 0.5s ease-out forwards';
-        for (let i = 0; i < 25; i++) {
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.width = (Math.random() * 10 + 4) + 'px';
-                particle.style.height = (Math.random() * 10 + 4) + 'px';
-                particle.style.background = `#${Math.floor(Math.random() * 100 + 100).toString(16)}ff00`;
-                particle.style.borderRadius = '50%';
-                particle.style.boxShadow = `0 0 15px #7CFC00`;
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 500);
-            }, i * 12);
-        }
-    }
-    else if(aura.id === 'sunflower_aura') {
-        effect.style.background = `radial-gradient(circle, ${aura.effectColor} 0%, #FFD700 30%, transparent 70%)`;
-        effect.style.boxShadow = `0 0 50px ${aura.color}, 0 0 80px #FFA500`;
-        effect.style.animation = 'sunflowerAuraPlayer 0.5s ease-out forwards';
-        for (let i = 0; i < 20; i++) {
-            const angle = (i / 20) * Math.PI * 2;
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + Math.cos(angle) * 120 + (Math.random() - 0.5) * 40) + 'px';
-                particle.style.top = (y + Math.sin(angle) * 120 + (Math.random() - 0.5) * 40) + 'px';
-                particle.style.width = (Math.random() * 8 + 4) + 'px';
-                particle.style.height = (Math.random() * 8 + 4) + 'px';
-                particle.style.background = '#FFD700';
-                particle.style.borderRadius = '50%';
-                particle.style.boxShadow = `0 0 15px #FFA500`;
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 500);
-            }, i * 15);
-        }
-    }
-    else if(aura.id === 'cherry_aura') {
-        effect.style.background = `radial-gradient(circle, #ff3366, #ff6699, transparent)`;
-        effect.style.boxShadow = `0 0 40px #ff3366`;
-        effect.style.animation = 'cherryAuraPlayer 0.4s ease-out forwards';
-        for (let i = 0; i < 20; i++) {
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.width = '8px';
-                particle.style.height = '8px';
-                particle.style.background = '#ff0000';
-                particle.style.borderRadius = '50%';
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.4s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 400);
-            }, i * 10);
-        }
-    }
-    else if(aura.id === 'lavender_aura') {
-        effect.style.background = `radial-gradient(circle, #E6E6FA, #D8BFD8, transparent)`;
-        effect.style.boxShadow = `0 0 40px #D8BFD8`;
-        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
-        for (let i = 0; i < 15; i++) {
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 180) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 180) + 'px';
-                particle.style.width = '6px';
-                particle.style.height = '6px';
-                particle.style.background = '#DDA0DD';
-                particle.style.borderRadius = '50%';
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.4s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 400);
-            }, i * 15);
-        }
-    }
-    else if(aura.id === 'rose_aura') {
-        effect.style.background = `radial-gradient(circle, #FF69B4, #FF1493, transparent)`;
-        effect.style.boxShadow = `0 0 40px #FF69B4`;
-        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
-        for (let i = 0; i < 15; i++) {
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 160) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 160) + 'px';
-                particle.style.width = '10px';
-                particle.style.height = '10px';
-                particle.style.background = '#FFB6C1';
-                particle.style.borderRadius = '50%';
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 500);
-            }, i * 15);
-        }
-    }
-    else if(aura.id === 'spring_aura') {
-        effect.style.background = `radial-gradient(circle, #00FA9A, #3CB371, transparent)`;
-        effect.style.boxShadow = `0 0 40px #00FA9A`;
-        effect.style.animation = 'auraExpandPlayer 0.4s ease-out forwards';
-        for (let i = 0; i < 25; i++) {
-            safeTimeout(() => {
-                const particle = document.createElement('div');
-                particle.style.position = 'fixed';
-                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.width = (Math.random() * 8 + 4) + 'px';
-                particle.style.height = (Math.random() * 8 + 4) + 'px';
-                particle.style.background = `hsl(${Math.random() * 120 + 60}, 100%, 60%)`;
-                particle.style.borderRadius = '50%';
-                particle.style.pointerEvents = 'none';
-                particle.style.animation = 'particleExplode 0.5s ease-out forwards';
-                document.body.appendChild(particle);
-                safeTimeout(() => particle.remove(), 500);
-            }, i * 10);
-        }
-    }
     else {
         effect.style.background = `radial-gradient(circle, ${aura.effectColor}, transparent)`;
         effect.style.boxShadow = `0 0 40px ${aura.color}`;
@@ -826,6 +693,156 @@ setInterval(() => {
         saveToCloud();
     }
 }, 60000);
+
+// ==================== КЛАСС PLAYER ====================
+class Player {
+    constructor() { this.reset(); }
+    reset() {
+        this.width = CONFIG.player.width; this.height = CONFIG.player.height;
+        this.x = 100; this.y = 200; this.velX = 0; this.velY = 0; this.jumping = false; this.jumpCount = 0;
+        this.color = '#4af626'; this.speed = CONFIG.player.speed; this.jumpPower = CONFIG.player.jumpPower;
+        this.gravity = CONFIG.player.gravity; this.friction = CONFIG.player.friction;
+        this.trail = []; this.maxTrail = 8; this.invulnerable = 0;
+        this.dashCharges = CONFIG.player.maxDashes; this.dashCooldown = 0; this.isDashing = false;
+        this.dashTimer = 0; this.dashDirection = 1; this.lastCheckpoint = { x: 100, y: 200 };
+        this.meleeCooldown = 0; this.swingEffect = 0;
+        return this;
+    }
+    update(keys) {
+        if (this.invulnerable > 0) this.invulnerable--; 
+        if (this.dashCooldown > 0) this.dashCooldown--;
+        if (this.meleeCooldown > 0) this.meleeCooldown--;
+        if (this.swingEffect > 0) this.swingEffect--;
+        
+        if (!this.isDashing) { this.trail.push({x: this.x, y: this.y}); if (this.trail.length > this.maxTrail) this.trail.shift(); }
+        if (this.isDashing) { this.dashTimer--; this.x += CONFIG.player.dashSpeed * this.dashDirection; if (this.dashTimer <= 0) { this.isDashing = false; this.velY = 0; } return; }
+        this.velY += this.gravity;
+        if (keys['ArrowLeft'] || keys['a'] || keys['ф']) { this.velX = -this.speed; this.dashDirection = -1; }
+        else if (keys['ArrowRight'] || keys['d'] || keys['в']) { this.velX = this.speed; this.dashDirection = 1; }
+        else { this.velX *= this.friction; }
+        if ((keys[' '] || keys['ArrowUp'] || keys['w'] || keys['ц']) && this.jumpCount < 2) {
+            if (!this.jumping || CONFIG.player.doubleJump) {
+                this.velY = -this.jumpPower; this.jumping = true; this.jumpCount++; this.createJumpParticles(); AudioSys.jump();
+                keys[' '] = false; keys['ArrowUp'] = false; keys['w'] = false; keys['ц'] = false;
+            }
+        }
+        if ((keys['Shift'] || keys['shift'] || keys['q'] || keys['й']) && this.dashCharges > 0 && this.dashCooldown <= 0) { this.startDash(); keys['Shift'] = false; keys['shift'] = false; keys['q'] = false; keys['й'] = false; }
+        this.x += this.velX; this.y += this.velY;
+        this.x = Math.max(cameraX + 50, Math.min(this.x, cameraX + canvas.width - 50 - this.width));
+        if (this.y > canvas.height + 200) { this.respawn(); return; }
+        this.checkPlatformCollisions();
+    }
+    startDash() {
+        this.isDashing = true; this.dashTimer = CONFIG.player.dashDuration; this.dashCharges--; this.dashCooldown = CONFIG.player.dashCooldown; this.invulnerable = 15; this.velY = 0; AudioSys.dash();
+        for (let i = 0; i < 20; i++) particlePool.acquire(this.x + this.width/2 + Math.random()*20 - 10, this.y + this.height/2 + Math.random()*20 - 10, '#FFDE7D');
+        updateDashIndicator();
+    }
+    meleeAttack() {
+        if (this.meleeCooldown > 0 || !gameRunning) return;
+        this.meleeCooldown = CONFIG.melee.cooldownMax;
+        this.swingEffect = 8;
+        AudioSys.meleeSwing();
+        const centerX = this.x + this.width/2;
+        const centerY = this.y + this.height/2;
+        
+        if (equippedAura) {
+            const aura = getAuraData(equippedAura);
+            if (aura) {
+                const screenX = centerX - cameraX;
+                const screenY = centerY;
+                showAuraEffectOnPlayer(screenX, screenY, aura);
+            }
+        }
+        
+        let hitSomething = false;
+        for (let i = 0; i < enemies.length; i++) {
+            const e = enemies[i];
+            if (!e.active) continue;
+            const enemyCenterX = e.x + e.width/2, enemyCenterY = e.y + e.height/2;
+            const dist = Math.hypot(centerX - enemyCenterX, centerY - enemyCenterY);
+            if (dist < CONFIG.melee.radius) {
+                if (e.takeDamage()) { enemies = enemies.filter(x => x !== e); }
+                hitSomething = true;
+                updateCombo();
+                this.createHitEffect(enemyCenterX, enemyCenterY);
+            }
+        }
+        for (let i = 0; i < flyingEnemies.length; i++) {
+            const fe = flyingEnemies[i];
+            if (!fe.active) continue;
+            const feCenterX = fe.x + fe.width/2, feCenterY = fe.y + fe.height/2;
+            const dist = Math.hypot(centerX - feCenterX, centerY - feCenterY);
+            if (dist < CONFIG.melee.radius) {
+                if (fe.takeDamage()) { flyingEnemies = flyingEnemies.filter(x => x !== fe); }
+                hitSomething = true;
+                updateCombo();
+                this.createHitEffect(feCenterX, feCenterY);
+            }
+        }
+        if (boss && boss.active) {
+            const bossCenterX = boss.x + boss.width/2, bossCenterY = boss.y + boss.height/2;
+            const dist = Math.hypot(centerX - bossCenterX, centerY - bossCenterY);
+            if (dist < CONFIG.melee.radius + 15) {
+                if (boss.takeDamage()) { boss = null; document.getElementById('bossHealthBar').style.display = 'none'; }
+                hitSomething = true;
+                updateCombo();
+                this.createHitEffect(bossCenterX, bossCenterY);
+                AudioSys.bossHit();
+            }
+        }
+        if (hitSomething) {
+            for (let i = 0; i < 25; i++) particlePool.acquire(centerX + (Math.random() - 0.5)*40, centerY + (Math.random() - 0.5)*40, '#ffaa33');
+            shakeScreen(3);
+        }
+    }
+    createHitEffect(x, y) { for (let i = 0; i < 15; i++) particlePool.acquire(x + (Math.random() - 0.5)*20, y + (Math.random() - 0.5)*20, '#ff5500'); }
+    createJumpParticles() { for (let i = 0; i < 12; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height, '#4af626'); }
+    createLandParticles() { for (let i = 0; i < 8; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height, '#08D9D6'); }
+    checkPlatformCollisions() {
+        let onGround = false;
+        for (let platform of platforms) {
+            if (this.checkCollision(platform)) {
+                if (this.velY > 0 && this.y + this.height - this.velY <= platform.y + 10) {
+                    this.y = platform.y - this.height; this.velY = 0;
+                    if (this.jumping) { this.createLandParticles(); this.jumping = false; }
+                    this.jumpCount = 0; onGround = true;
+                    if (platform.type === 'breaking' && !platform.broken) platform.breakTimer = 60;
+                }
+            }
+        }
+        if (onGround) this.jumpCount = 0;
+    }
+    checkCollision(obj) { return this.x < obj.x + obj.width && this.x + this.width > obj.x && this.y < obj.y + obj.height && this.y + this.height > obj.y; }
+    takeDamage(amount, knockbackX, knockbackY, color) {
+        if (this.invulnerable > 0 || this.isDashing) return false;
+        playerHealth = Math.max(0, playerHealth - amount); updateHealthBar(); this.knockback(knockbackX, knockbackY);
+        this.invulnerable = 45; AudioSys.hit();
+        roundDamage += amount;
+        for (let i = 0; i < 15; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height/2, color || '#ff2e63');
+        if (playerHealth <= 0) { gameOver(); return true; } return false;
+    }
+    knockback(x, y) { this.velX = x; this.velY = y; this.jumping = true; }
+    respawn() { this.takeDamage(30); this.x = this.lastCheckpoint.x; this.y = this.lastCheckpoint.y; this.velX = 0; this.velY = 0; this.jumping = false; this.jumpCount = 0; this.invulnerable = 90; for (let i = 0; i < 25; i++) particlePool.acquire(this.x + this.width/2, this.y + this.height/2, '#FF2E63'); shakeScreen(5); }
+    saveCheckpoint() { this.lastCheckpoint = { x: this.x, y: this.y }; showCheckpointIndicator(); AudioSys.checkpoint(); }
+    draw(ctx, cameraX) {
+        const skin = getSkinData(equippedSkin);
+        for (let i = 0; i < this.trail.length; i++) { ctx.globalAlpha = i / this.trail.length * 0.25; ctx.fillStyle = this.isDashing ? '#FFDE7D' : skin.color; ctx.fillRect(this.trail[i].x - cameraX, this.trail[i].y, this.width, this.height); }
+        ctx.globalAlpha = 1; ctx.fillStyle = skin.color; const drawX = this.x - cameraX;
+        if (this.isDashing) { ctx.shadowColor = skin.color; ctx.shadowBlur = 20; ctx.fillRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0; }
+        else { ctx.fillRect(drawX, this.y, this.width, this.height); }
+        ctx.fillStyle = '#222'; ctx.fillRect(drawX + 10, this.y + 10, 8, 8); ctx.fillRect(drawX + 22, this.y + 10, 8, 8); ctx.fillRect(drawX + 10, this.y + 25, 20, 4);
+        ctx.strokeStyle = this.invulnerable > 0 && Math.floor(this.invulnerable/4)%2===0 ? '#fff' : skin.color; ctx.lineWidth = 2; ctx.strokeRect(drawX, this.y, this.width, this.height);
+        if (['magma','royal'].includes(skin.id)) { ctx.shadowColor = skin.color; ctx.shadowBlur = 15; ctx.strokeRect(drawX, this.y, this.width, this.height); ctx.shadowBlur = 0; }
+        if (this.swingEffect > 0) {
+            ctx.beginPath(); ctx.arc(drawX + this.width/2, this.y + this.height/2, CONFIG.melee.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 80, 40, ${0.3 * (this.swingEffect / 8)})`; ctx.fill();
+            ctx.beginPath(); ctx.arc(drawX + this.width/2, this.y + this.height/2, CONFIG.melee.radius - 10, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 0, 0.5)`; ctx.fill();
+        }
+        if (this.jumpCount === 1 && !this.jumping) { ctx.fillStyle = 'rgba(8, 217, 214, 0.7)'; ctx.beginPath(); ctx.arc(drawX + this.width/2, this.y - 8, 5, 0, Math.PI*2); ctx.fill(); }
+    }
+}
+
 
 // ==================== КЛАСС PLAYER ====================
 class Player {

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kolblocks | ELO & Магазин | С облаком</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>Загрузка Kolblocks</div>
+        <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div id="title">KOLBLOCKS</div>
+    <div id="eloDisplay">🏆 ELO: <span id="eloValue">0</span></div>
+
+    <div id="ui">
+        <div class="stat"><span class="stat-label">Уровень:</span><span class="stat-value" id="levelDisplay">1</span></div>
+        <div class="stat"><span class="stat-label">Очки:</span><span class="stat-value" id="scoreDisplay">0</span></div>
+        <div class="stat"><span class="stat-label">Комбо:</span><span class="stat-value" id="comboCount">x1</span></div>
+        <div class="stat"><span class="stat-label">Здоровье:</span></div>
+        <div id="healthBar"><div id="healthFill"></div></div>
+    </div>
+
+    <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
+    <div id="comboDisplay">COMBO x<span id="comboValue">1</span></div>
+    <div id="dashIndicator"><div class="dash-dot active"></div><div class="dash-dot"></div></div>
+    <div id="checkpointIndicator">✓ Чекпоинт сохранён!</div>
+
+    <div id="levelComplete">
+        <h2>🎉 УРОВЕНЬ ПРОЙДЕН!</h2>
+        <p>Счёт уровня: <span id="levelScore" style="color:#4af626;font-weight:bold">0</span></p>
+        <p>Комбо максимум: <span id="maxCombo" style="color:#FFDE7D;font-weight:bold">x1</span></p>
+        <p>🪙 Собрано монет: <span id="coinsCollected" style="color:#FFDE7D;font-weight:bold">0</span></p>
+        <p>💥 Получено урона: <span id="damageTaken" style="color:#ff2e63;font-weight:bold">0</span></p>
+        <p style="margin-top:10px;color:#FFDE7D;font-size:18px">Изменение ELO: <span id="eloChangeDisplay" style="font-weight:bold">+0</span></p>
+        <p style="margin-top:15px;color:#888">Следующий уровень...</p>
+    </div>
+
+    <div id="bossWarning"><h2>⚠️ БОСС!</h2><p style="font-size:24px;color:#fff">Приготовьтесь к битве!</p></div>
+
+    <div id="gameOver">
+        <h2>💀 ИГРА ОКОНЧЕНА</h2>
+        <p>Итоговый счёт: <span id="finalScore" style="color:#4af626;font-size:28px;font-weight:bold">0</span></p>
+        <p>Пройдено уровней: <span id="finalLevel">1</span></p>
+        <p>Макс. комбо: <span id="finalCombo" style="color:#FFDE7D">x1</span></p>
+        <p>Побеждено боссов: <span id="bossesDefeated" style="color:#ff0000">0</span></p>
+        <p style="margin-top:10px;color:#FFDE7D">Финальный ELO: <span id="finalElo" style="font-weight:bold;font-size:20px">0</span></p>
+        <div style="margin-top:10px">
+            <button onclick="restartGame()">🔄 ИГРАТЬ СНОВА</button>
+            <button class="secondary" onclick="showPauseMenu()">⚙️ НАСТРОЙКИ</button>
+        </div>
+    </div>
+
+    <div id="pauseMenu">
+        <div class="pause-content">
+            <h2>⏸ ПАУЗА</h2>
+            <div class="controls-info">
+                <span>← → / A D</span> Движение игрока<br>
+                <span>SPACE / W / ↑</span> Прыжок (двойной!)<br>
+                <span class="highlight">ЛКМ / V</span> Ближний бой (удар по площади) 💥<br>
+                <span>SHIFT / Q</span> Рывок (2 заряда) ⚡<br>
+                <span>P / ESC</span> Пауза игры ⏸<br>
+                <span>R</span> Быстрый рестарт 🔄
+            </div>
+            <div style="margin:15px 0">
+                <label style="color:#ccc;margin-right:15px"><input type="checkbox" id="soundToggle" checked> 🔊 Звук</label>
+                <label style="color:#ccc"><input type="checkbox" id="particlesToggle" checked> ✨ Частицы</label>
+            </div>
+            <div class="pause-buttons">
+                <button onclick="togglePause()">▶ ПРОДОЛЖИТЬ</button>
+                <button onclick="openShop()">🎁 МАГАЗИН КЕЙСОВ</button>
+                <button onclick="openAuthModal()">👤 ВХОД / РЕГИСТРАЦИЯ</button>
+                <button class="secondary" onclick="restartGame()">🔄 ЗАНОВО</button>
+                <button class="secondary" onclick="location.reload()">🏠 В МЕНЮ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН АВТОРИЗАЦИИ -->
+    <div id="authModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: #1a1a2e; padding: 30px; border-radius: 20px; border: 2px solid #4af626; width: 90%; max-width: 350px; text-align: center;">
+            <h2 style="color: #4af626; margin-bottom: 20px;">🔐 АВТОРИЗАЦИЯ</h2>
+            
+            <!-- Форма входа -->
+            <div id="loginPanel">
+                <input type="email" id="loginEmail" placeholder="Email" style="width:100%; padding:12px; margin:10px 0; background:#333; border:none; color:white; border-radius:8px;">
+                <input type="password" id="loginPassword" placeholder="Пароль" style="width:100%; padding:12px; margin:10px 0; background:#333; border:none; color:white; border-radius:8px;">
+                <button onclick="handleLogin()" style="width:100%; margin-top:10px;">ВОЙТИ</button>
+                <p style="margin-top:15px;">Нет аккаунта? <a href="#" onclick="showRegisterPanel()" style="color:#4af626;">Зарегистрироваться</a></p>
+                <button onclick="playAsGuest()" class="secondary" style="width:100%; margin-top:10px;">🎮 ИГРАТЬ БЕЗ АККАУНТА</button>
+            </div>
+
+            <!-- Форма регистрации -->
+            <div id="registerPanel" style="display: none;">
+                <input type="text" id="regUsername" placeholder="Имя (необязательно)" style="width:100%; padding:12px; margin:10px 0; background:#333; border:none; color:white; border-radius:8px;">
+                <input type="email" id="regEmail" placeholder="Email" style="width:100%; padding:12px; margin:10px 0; background:#333; border:none; color:white; border-radius:8px;">
+                <input type="password" id="regPassword" placeholder="Пароль (мин. 6 символов)" style="width:100%; padding:12px; margin:10px 0; background:#333; border:none; color:white; border-radius:8px;">
+                <button onclick="handleRegister()" style="width:100%; margin-top:10px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+                <p style="margin-top:15px;">Уже есть аккаунт? <a href="#" onclick="showLoginPanel()" style="color:#4af626;">Войти</a></p>
+            </div>
+            
+            <button onclick="closeAuthModal()" class="secondary" style="margin-top:20px;">✖ ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="caseShopScreen">
+        <div class="shop-content">
+            <h2>🎁 МАГАЗИН КЕЙСОВ</h2>
+            <div class="shop-header">
+                <span class="key-icon">🔑 Ключи: <span id="shopKeyCount">0</span></span>
+            </div>
+            
+            <div class="chests-container">
+                <div class="chest-card">
+                    <div id="chestVisual" class="chest normal-chest">📦</div>
+                    <p class="chest-cost">Цена: 10 🔑</p>
+                    <button id="openChestBtn" onclick="openChest()">ОТКРЫТЬ</button>
+                </div>
+                <div class="chest-card">
+                    <div id="auraChestVisual" class="chest aura-chest">✨</div>
+                    <p class="chest-cost">Цена: 12 🔑</p>
+                    <button id="openAuraChestBtn" onclick="openAuraChest()">ОТКРЫТЬ</button>
+                </div>
+                <div class="chest-card">
+                    <div id="may2026ChestVisual" class="chest may-chest">🌸</div>
+                    <p class="chest-cost">Цена: 15 🔑</p>
+                    <button id="openMay2026ChestBtn" onclick="openMay2026Chest()">ОТКРЫТЬ КЕЙС МАЙ 2026</button>
+                </div>
+            </div>
+            
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши скины:</h3>
+            <div id="skinsGrid" class="skins-grid"></div>
+            
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши ауры (эффект при ударе):</h3>
+            <div id="aurasGrid" class="skins-grid"></div>
+            
+            <button class="secondary" onclick="closeShop()" style="margin-top:30px">✖ ЗАКРЫТЬ</button>
+        </div>
+        <div id="chestResult"><h3 id="resultTitle">Предмет получен!</h3><p id="resultText"></p><button onclick="hideResult()">ОК</button></div>
+    </div>
+
+    <div id="mobileControls" style="display:none">
+        <div class="mobile-group">
+            <button class="mobile-btn" id="btnLeft">←</button>
+            <button class="mobile-btn" id="btnRight">→</button>
+        </div>
+        <div class="mobile-group">
+            <button class="mobile-btn dash" id="btnDash">⇨</button>
+            <button class="mobile-btn attack" id="btnAttack">⚔️</button>
+            <button class="mobile-btn jump" id="btnJump">↑</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>

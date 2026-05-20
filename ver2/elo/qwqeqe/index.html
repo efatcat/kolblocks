@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Uploader - Cloud Tracks</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🎵</span>
+                <span class="logo-text">Music Uploader</span>
+                <span class="logo-badge">beta</span>
+            </div>
+            <nav>
+                <a href="#" class="active">Library</a>
+                <a href="#">Playlists</a>
+                <a href="#">Upload</a>
+                <a href="#">Profile</a>
+            </nav>
+            <div class="user-menu">
+                <span>🎧 listener_4739</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="welcome-section">
+                <h1>Upload your tracks</h1>
+                <p>Support for .rnp3 format — high quality lossless audio</p>
+            </div>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📀</div>
+                <div class="upload-text">Drag & drop .rnp3 file here</div>
+                <div class="upload-sub">or click to select file</div>
+                <input type="file" id="fileInput" accept=".rnp3" style="display:none">
+                <button class="upload-btn" id="uploadBtn">Choose file</button>
+            </div>
+
+            <div class="recent-tracks">
+                <h3>Recently uploaded</h3>
+                <div class="tracks-list" id="tracksList">
+                    <div class="track-item empty-state">
+                        <span>No tracks yet</span>
+                        <span>Upload .rnp3 file to get started</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-card">
+                    <div class="info-icon">ℹ️</div>
+                    <div class="info-text">
+                        <strong>About .rnp3 format</strong>
+                        <p>RNP3 (Real Noise Profile 3) is a proprietary lossless audio format developed for high-fidelity music distribution. Files contain encrypted audio metadata and waveform signatures.</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🔒</div>
+                    <div class="info-text">
+                        <strong>Secure upload</strong>
+                        <p>All tracks are scanned for malware and verified against our audio signature database. Invalid files will be rejected.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="toast" id="toast">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <script src="uploader.js"></script>
+</body>
+</html>

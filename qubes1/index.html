@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Qubes | QubDrop система</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>Загрузка Qubes</div>
+        <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div id="title">QUBES</div>
+    <div id="eloDisplay">🏆 ОЧКИ: <span id="eloValue">0</span></div>
+
+    <div id="ui">
+        <div class="stat"><span class="stat-label">Уровень:</span><span class="stat-value" id="levelDisplay">1</span></div>
+        <div class="stat"><span class="stat-label">Очки:</span><span class="stat-value" id="scoreDisplay">0</span></div>
+        <div class="stat"><span class="stat-label">Комбо:</span><span class="stat-value" id="comboCount">x1</span></div>
+        <div class="stat"><span class="stat-label">Здоровье:</span></div>
+        <div id="healthBar"><div id="healthFill"></div></div>
+    </div>
+
+    <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
+    <div id="comboDisplay">COMBO x<span id="comboValue">1</span></div>
+    <div id="dashIndicator"><div class="dash-dot active"></div><div class="dash-dot"></div></div>
+    <div id="checkpointIndicator">✓ Чекпоинт сохранён!</div>
+
+    <div id="levelComplete">
+        <h2>🎉 УРОВЕНЬ ПРОЙДЕН!</h2>
+        <p>Счёт уровня: <span id="levelScore" style="color:#4af626;font-weight:bold">0</span></p>
+        <p>Комбо максимум: <span id="maxCombo" style="color:#FFDE7D;font-weight:bold">x1</span></p>
+        <p>🪙 Собрано монет: <span id="coinsCollected" style="color:#FFDE7D;font-weight:bold">0</span></p>
+        <p>💥 Получено урона: <span id="damageTaken" style="color:#ff2e63;font-weight:bold">0</span></p>
+        <p style="margin-top:10px;color:#FFDE7D;font-size:18px">Изменение очков: <span id="eloChangeDisplay" style="font-weight:bold">+0</span></p>
+        <p style="margin-top:15px;color:#888">Следующий уровень...</p>
+    </div>
+
+    <div id="bossWarning"><h2>⚠️ БОСС!</h2><p style="font-size:24px;color:#fff">Приготовьтесь к битве!</p></div>
+
+    <div id="gameOver">
+        <h2>💀 ИГРА ОКОНЧЕНА</h2>
+        <p>Итоговый счёт: <span id="finalScore" style="color:#4af626;font-size:28px;font-weight:bold">0</span></p>
+        <p>Пройдено уровней: <span id="finalLevel">1</span></p>
+        <p>Макс. комбо: <span id="finalCombo" style="color:#FFDE7D">x1</span></p>
+        <p>Побеждено боссов: <span id="bossesDefeated" style="color:#ff0000">0</span></p>
+        <p style="margin-top:10px;color:#FFDE7D">Финальные очки: <span id="finalElo" style="font-weight:bold;font-size:20px">0</span></p>
+        <div style="margin-top:10px">
+            <button onclick="restartGame()">🔄 ИГРАТЬ СНОВА</button>
+            <button class="secondary" onclick="showPauseMenu()">⚙️ НАСТРОЙКИ</button>
+        </div>
+    </div>
+
+    <div id="pauseMenu">
+        <div class="pause-content">
+            <h2>⏸ ПАУЗА</h2>
+            <div class="controls-info">
+                <span>← → / A D</span> Движение игрока<br>
+                <span>SPACE / W / ↑</span> Прыжок (двойной!)<br>
+                <span class="highlight">ЛКМ / V</span> Ближний бой (удар по площади) 💥<br>
+                <span>SHIFT / Q</span> Рывок (2 заряда) ⚡<br>
+                <span>P / ESC</span> Пауза игры ⏸<br>
+                <span>R</span> Быстрый рестарт 🔄
+            </div>
+            <div style="margin:15px 0">
+                <label style="color:#ccc;margin-right:15px"><input type="checkbox" id="soundToggle" checked> 🔊 Звук</label>
+                <label style="color:#ccc"><input type="checkbox" id="particlesToggle" checked> ✨ Частицы</label>
+            </div>
+            <div class="pause-buttons">
+                <button onclick="togglePause()">▶ ПРОДОЛЖИТЬ</button>
+                <button onclick="openQubDropShop()">🎲 QUBDROP</button>
+                <button class="secondary" onclick="restartGame()">🔄 ЗАНОВО</button>
+                <button class="secondary" onclick="location.reload()">🏠 В МЕНЮ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Магазин QubDrop (вместо кейсов) -->
+    <div id="qubdropShop">
+        <div class="shop-content">
+            <h2>🎲 QUBDROP</h2>
+            <div class="shop-header">
+                <span class="key-icon">🎁 Доступно: <span id="qubdropCount">0</span></span>
+                <span class="key-icon">🏆 Очки: <span id="totalEloDisplay">0</span></span>
+            </div>
+            
+            <div class="qubdrop-info">
+                <p>★ 1 QubDrop = 200 000 очков ★</p>
+                <p>↓ Нажми на куб, чтобы открыть ↓</p>
+            </div>
+            
+            <div class="qubdrop-container" id="qubdropContainer">
+                <div class="qubdrop-cube-wrapper" id="qubdropCubeWrapper">
+                    <svg id="qubdropCube" class="qubdrop-cube-shop" viewBox="0 0 40 40" width="120" height="120">
+                        <rect x="0" y="0" width="40" height="40" fill="#FFD700" stroke="#B8860B" stroke-width="2"/>
+                        <rect x="10" y="10" width="8" height="8" fill="#222"/>
+                        <rect x="22" y="10" width="8" height="8" fill="#222"/>
+                        <rect x="10" y="25" width="20" height="4" fill="#222"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <button class="secondary" onclick="closeQubDropShop()" style="margin-top:30px">✖ ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <!-- Результат QubDrop -->
+    <div id="qubdropResult">
+        <div class="result-card">
+            <div class="result-icon" id="resultIcon">🎁</div>
+            <div class="result-name" id="resultName"></div>
+            <button onclick="closeQubDropResult()" class="back-btn">ПРОДОЛЖИТЬ</button>
+        </div>
+    </div>
+
+    <div id="mobileControls">
+        <div class="mobile-group">
+            <button class="mobile-btn" id="btnLeft">←</button>
+            <button class="mobile-btn" id="btnRight">→</button>
+        </div>
+        <div class="mobile-group">
+            <button class="mobile-btn dash" id="btnDash">⇨</button>
+            <button class="mobile-btn attack" id="btnAttack">⚔️</button>
+            <button class="mobile-btn jump" id="btnJump">↑</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="game.js"></script>
+</body>
+</html>

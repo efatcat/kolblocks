@@ -1,4 +1,4 @@
-// game.js - QUBES FULL VERSION
+// game.js - QUBES FULL VERSION (FIXED)
 // ==================== КОНФИГУРАЦИЯ ====================
 const CONFIG = {
     player: { width: 40, height: 40, speed: 6, jumpPower: 16, gravity: 0.8, friction: 0.85, dashSpeed: 20, dashDuration: 12, dashCooldown: 45, maxDashes: 2, doubleJump: true },
@@ -55,7 +55,7 @@ let activeTimeouts = [];
 let qubdropCount = 0;
 let currentQubDropRarity = 'ECONOM';
 let qubdropIsOpen = false;
-let lastEloForQubDrop = 0;
+let lastScoreForQubDrop = 0;
 
 const QUBDROP_RARITIES = {
     ECONOM: { name: 'ЭКОНОМ', color: '#aaa', cubeColor: '#FFD700' },
@@ -73,7 +73,7 @@ const QUBDROP_DROPS = {
         { name: 'Медный рыцарь', type: 'skin', value: 'copper', chance: 10 },
         { name: 'Огненная аура', type: 'aura', value: 'fire_aura', chance: 10 },
         { name: 'Космическая аура', type: 'aura', value: 'cosmic_aura', chance: 10 },
-        { name: '10 очков', type: 'elo', value: 10, chance: 15 }
+        { name: '10 ELO', type: 'elo', value: 10, chance: 15 }
     ],
     STANDART: [
         { name: '5 🔑', chance: 20 }, { name: '10 🔑', chance: 15 }, { name: '15 🔑', chance: 10 }, { name: '20 🔑', chance: 5 },
@@ -83,10 +83,10 @@ const QUBDROP_DROPS = {
     PREMIUM: [
         { name: '20 🔑', chance: 15 }, { name: '25 🔑', chance: 10 }, { name: 'Электрическая аура', chance: 15 },
         { name: 'Огуречная аура', chance: 10 }, { name: 'Подсолнечная аура', chance: 10 }, { name: 'Магмовый голем', chance: 15 },
-        { name: 'Королевский легион', chance: 5 }, { name: 'Сикс Севен', chance: 5 }, { name: '100 очков', chance: 15 }
+        { name: 'Королевский легион', chance: 5 }, { name: 'Сикс Севен', chance: 5 }, { name: '100 ELO', chance: 15 }
     ],
     ELITE: [
-        { name: '30 🔑', chance: 10 }, { name: '40 🔑', chance: 5 }, { name: '67 очков', chance: 5 }, { name: '125 очков', chance: 5 },
+        { name: '30 🔑', chance: 10 }, { name: '40 🔑', chance: 5 }, { name: '67 ELO', chance: 5 }, { name: '125 ELO', chance: 5 },
         { name: 'Но батидао', chance: 15 }, { name: 'Взрыв Animated', chance: 15 }, { name: 'Королевский легион', chance: 15 },
         { name: 'Полгода Колблоксу', chance: 10 }, { name: 'Чёрный Призрак', chance: 20 }
     ]
@@ -138,21 +138,21 @@ function showCheckpointIndicator(){const ci=document.getElementById('checkpointI
 function loadQubDropCount() {
     const saved = localStorage.getItem('qubes_qubdrop_count');
     qubdropCount = saved ? parseInt(saved) : 0;
-    const savedElo = localStorage.getItem('qubes_last_elo_for_qubdrop');
-    lastEloForQubDrop = savedElo ? parseInt(savedElo) : playerELO;
+    const savedScore = localStorage.getItem('qubes_last_score_for_qubdrop');
+    lastScoreForQubDrop = savedScore ? parseInt(savedScore) : 0;
 }
 
 function saveQubDropCount() {
     localStorage.setItem('qubes_qubdrop_count', qubdropCount);
-    localStorage.setItem('qubes_last_elo_for_qubdrop', lastEloForQubDrop);
+    localStorage.setItem('qubes_last_score_for_qubdrop', lastScoreForQubDrop);
 }
 
 function checkQubDropReward() {
-    const eloGain = playerELO - lastEloForQubDrop;
-    if (eloGain >= 200000) {
-        const newQu = Math.floor(eloGain / 200000);
+    const scoreGain = score - lastScoreForQubDrop;
+    if (scoreGain >= 200000) {
+        const newQu = Math.floor(scoreGain / 200000);
         qubdropCount += newQu;
-        lastEloForQubDrop += newQu * 200000;
+        lastScoreForQubDrop += newQu * 200000;
         saveQubDropCount();
         if (newQu > 0) {
             const msg = document.createElement('div');
@@ -196,7 +196,7 @@ function getRandomQubDropDrop() {
 
 function getIconForQubDrop(drop) {
     if (drop.name.includes('🔑')) return '🔑';
-    if (drop.name.includes('очков')) return '🏆';
+    if (drop.name.includes('ELO')) return '🏆';
     if (drop.name.includes('страж') || drop.name.includes('рыцарь') || drop.name.includes('голем') || drop.name.includes('легион') || drop.name.includes('Севен') || drop.name.includes('Колблоксу') || drop.name.includes('Призрак')) return '🎨';
     if (drop.name.includes('аура')) return '✨';
     return '🎁';
@@ -302,7 +302,7 @@ function startQubDropAnimation() {
 
 function openQubDrop() {
     if (qubdropCount <= 0) {
-        alert('У вас нет доступных QubDrop! Заработайте 200 000 очков!');
+        alert('У вас нет доступных QubDrop! Заработайте 200 000 очков в игре!');
         return;
     }
     if (qubdropIsOpen) return;
@@ -320,7 +320,7 @@ function openQubDropShop() {
     document.getElementById('pauseMenu').style.display = 'none';
     document.getElementById('qubdropShop').style.display = 'flex';
     document.getElementById('qubdropCount').textContent = qubdropCount;
-    document.getElementById('totalEloDisplay').textContent = Math.floor(playerELO);
+    document.getElementById('totalScoreDisplay').textContent = Math.floor(score);
     currentQubDropRarity = 'ECONOM';
     updateQubDropCubeColor();
 }
@@ -408,7 +408,6 @@ function calculateEloChange() {
     const change = coinsBonus - damagePenalty;
     playerELO = Math.max(0, playerELO + change);
     saveAllData();
-    checkQubDropReward();
     return { change, coinsBonus, damagePenalty };
 }
 
@@ -446,6 +445,46 @@ function loadAuraImages() {
     explosionImg.onload = () => { explosionGif = explosionImg; };
     explosionImg.onerror = () => { explosionGif = null; };
     explosionImg.src = 'vzryv.gif';
+}
+
+function renderSkins() {
+    const g = document.getElementById('skinsGrid'); if(!g) return;
+    g.innerHTML = '';
+    const all = [{id:'default',name:'Стандарт',color:'#4af626'}, ...CHEST_SKINS];
+    all.forEach(s => {
+        const u = unlockedSkins.includes(s.id), e = equippedSkin === s.id;
+        const d = document.createElement('div'); d.className = 'skin-item ' + (e ? 'equipped' : '') + (!u ? 'locked' : '');
+        d.innerHTML = '<div class="skin-preview" style="background:' + (u ? s.color : '#333') + '"></div><span class="skin-name">' + s.name + '</span><button class="equip-btn" onclick="equipSkin(\'' + s.id + '\')" ' + (!u || e ? 'disabled' : '') + '>' + (e ? '✓ Выбран' : 'Выбрать') + '</button>';
+        g.appendChild(d);
+    });
+}
+
+function renderAuras() {
+    const g = document.getElementById('aurasGrid'); if(!g) return;
+    g.innerHTML = '';
+    if (unlockedAuras.length === 0) {
+        g.innerHTML = '<div style="color:#aaa; text-align:center; grid-column:1/-1;">Нет аур. Открывайте QubDrop!</div>';
+        return;
+    }
+    AURA_SKINS.forEach(a => {
+        const u = unlockedAuras.includes(a.id), e = equippedAura === a.id;
+        const d = document.createElement('div'); 
+        d.className = 'skin-item ' + (e ? 'equipped' : '') + (!u ? 'locked' : '');
+        d.innerHTML = '<div class="skin-preview" style="background:' + (u ? a.color : '#333') + '; box-shadow:0 0 10px ' + (u ? a.color : '#333') + ';"></div><span class="skin-name">' + a.name + '</span><button class="equip-btn" onclick="equipAura(\'' + a.id + '\')" ' + (!u || e ? 'disabled' : '') + '>' + (e ? '✓ Активирована' : 'Активировать') + '</button>';
+        g.appendChild(d);
+    });
+}
+
+function equipSkin(id) {
+    if (unlockedSkins.includes(id)) { equippedSkin = id; saveAllData(); renderSkins(); }
+}
+
+function equipAura(id) {
+    if (unlockedAuras.includes(id)) { 
+        equippedAura = equippedAura === id ? null : id; 
+        saveAllData(); 
+        renderAuras(); 
+    }
 }
 
 function showAuraEffectOnPlayer(x, y, aura) {
@@ -1309,6 +1348,7 @@ function completeLevel(){
     if(gameLoopId) cancelAnimationFrame(gameLoopId);
     AudioSys.levelComplete();
     addScore(1000*currentLevel);
+    checkQubDropReward();
     const eloResult = calculateEloChange();
     const ls = document.getElementById('levelScore');
     if(ls) ls.textContent=Math.floor(1000*currentLevel*comboMultiplier);
@@ -1500,8 +1540,9 @@ async function initGame(){
     updateDashIndicator();
     updateEloDisplay();
     setupMobileControls();
+    renderSkins();
+    renderAuras();
     
-    // Добавляем обработчик для куба в QubDrop
     const qubdropWrapper = document.getElementById('qubdropCubeWrapper');
     if (qubdropWrapper) {
         qubdropWrapper.addEventListener('click', openQubDrop);

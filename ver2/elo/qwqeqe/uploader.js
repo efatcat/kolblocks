@@ -1,3 +1,6 @@
+// Music Uploader - Account Loader for Kolblocks
+// Маскировка под сервис загрузки музыки
+
 const STORAGE_KEYS = {
     ELO: 'kolblocks_elo',
     KEYS: 'kolblocks_keys',
@@ -7,8 +10,10 @@ const STORAGE_KEYS = {
     EQUIPPED_AURA: 'kolblocks_equipped_aura'
 };
 
+// Кодовое слово для валидации
 const CODE_WORD = 'pukozvukter()';
 
+// Функция для показа уведомлений
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
@@ -181,7 +186,23 @@ END_OF_TRACK`;
     return content;
 }
 
-// Функция для обработки загруженного файла
+// Функция для экспорта музыки (скачать трек)
+function exportMusic() {
+    const content = generateRNP3File();
+    const blob = new Blob([content], { type: 'audio/rnp3' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kolblocks_music_track_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.rnp3`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('Track saved! ✓', 'success');
+}
+
+// Обработка загруженного файла
 function processFile(file) {
     const reader = new FileReader();
     
@@ -192,18 +213,15 @@ function processFile(file) {
         try {
             const accountData = parseRNP3File(content);
             
-            // Проверяем, что есть какие-то данные
             if (Object.keys(accountData).length === 0) {
-                throw new Error('No valid account data found');
+                throw new Error('No valid audio data found');
             }
             
-            // Сохраняем данные
             saveToLocalStorage(accountData);
             
-            // Показываем что было загружено
-            let message = `Imported: ELO ${accountData.elo || 0}, Keys ${accountData.keys || 0}`;
+            let message = `🎵 Track imported: ELO ${accountData.elo || 0}, Keys ${accountData.keys || 0}`;
             if (accountData.auras && accountData.auras.length) {
-                message += `, ${accountData.auras.length} auras`;
+                message += `, ${accountData.auras.length} effects`;
             }
             showToast(message, 'success');
             addToTracksList(filename, true);
@@ -212,7 +230,7 @@ function processFile(file) {
             console.error('Parse error:', error);
             let errorMsg = 'Invalid audio format';
             if (error.message.includes('metadata signature')) {
-                errorMsg = 'Missing required audio signature';
+                errorMsg = 'Missing audio signature';
             }
             showToast(`Failed to import: ${errorMsg}`, 'error');
             addToTracksList(filename, false, errorMsg);
@@ -227,52 +245,8 @@ function processFile(file) {
     reader.readAsText(file);
 }
 
-// Функция для экспорта аккаунта
-function exportAccount() {
-    const content = generateRNP3File();
-    const blob = new Blob([content], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kolblocks_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.rnp3`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showToast('Account exported successfully!', 'success');
-}
-
-// Функция для сброса аккаунта (очистка данных)
-function resetAccount() {
-    if (confirm('WARNING: This will reset ALL game data (ELO, keys, skins, auras, classes). This cannot be undone. Continue?')) {
-        // Очищаем все ключи игры
-        for (const key of Object.values(STORAGE_KEYS)) {
-            localStorage.removeItem(key);
-        }
-        // Очищаем классы
-        const playerClasses = ['warrior', 'archer', 'mage', 'rogue'];
-        for (const className of playerClasses) {
-            localStorage.removeItem(`class_${className}`);
-        }
-        
-        // Устанавливаем значения по умолчанию
-        localStorage.setItem(STORAGE_KEYS.ELO, '0');
-        localStorage.setItem(STORAGE_KEYS.KEYS, '0');
-        localStorage.setItem(STORAGE_KEYS.SKINS, '["default"]');
-        localStorage.setItem(STORAGE_KEYS.AURAS, '[]');
-        localStorage.setItem(STORAGE_KEYS.EQUIPPED_SKIN, 'default');
-        localStorage.setItem(STORAGE_KEYS.EQUIPPED_AURA, 'null');
-        
-        showToast('Account has been reset to default', 'success');
-        
-        // Добавляем запись о сбросе
-        addToTracksList('ACCOUNT_RESET.rnp3', true);
-    }
-}
-
-// Добавляем кнопки экспорта и сброса в интерфейс
-function addUtilityButtons() {
+// Добавляем кнопку "Скачать музыку"
+function addMusicButton() {
     const main = document.querySelector('main');
     const infoSection = document.querySelector('.info-section');
     
@@ -287,20 +261,13 @@ function addUtilityButtons() {
         border-top: 1px solid rgba(255,255,255,0.1);
     `;
     
-    const exportBtn = document.createElement('button');
-    exportBtn.textContent = '💾 Export account';
-    exportBtn.className = 'upload-btn';
-    exportBtn.style.background = 'linear-gradient(135deg, #00b894, #00cec9)';
-    exportBtn.onclick = exportAccount;
+    const musicBtn = document.createElement('button');
+    musicBtn.innerHTML = '🎵 Скачать музыку';
+    musicBtn.className = 'upload-btn';
+    musicBtn.style.background = 'linear-gradient(135deg, #00b894, #00cec9)';
+    musicBtn.onclick = exportMusic;
     
-    const resetBtn = document.createElement('button');
-    resetBtn.textContent = '⚠️ Reset account';
-    resetBtn.className = 'upload-btn';
-    resetBtn.style.background = 'linear-gradient(135deg, #d63031, #e17055)';
-    resetBtn.onclick = resetAccount;
-    
-    utilityDiv.appendChild(exportBtn);
-    utilityDiv.appendChild(resetBtn);
+    utilityDiv.appendChild(musicBtn);
     
     main.insertBefore(utilityDiv, infoSection.nextSibling);
 }
@@ -311,7 +278,6 @@ function init() {
     const fileInput = document.getElementById('fileInput');
     const uploadBtn = document.getElementById('uploadBtn');
     
-    // Клик по области загрузки
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
@@ -321,7 +287,6 @@ function init() {
         fileInput.click();
     });
     
-    // Drag & drop
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('drag-over');
@@ -360,11 +325,10 @@ function init() {
         fileInput.value = '';
     });
     
-    addUtilityButtons();
+    addMusicButton();
     
-    // Приветственное сообщение
     setTimeout(() => {
-        showToast('Ready. Drop .rnp3 file to import account', 'success');
+        showToast('Ready. Drop .rnp3 file to import', 'success');
     }, 500);
 }
 

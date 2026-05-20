@@ -302,7 +302,7 @@ function startQubDropAnimation() {
 
 function openQubDrop() {
     if (qubdropCount <= 0) {
-        alert('У вас нет доступных QubDrop! Заработайте 200 000 очков в игре!');
+        alert('У вас нет доступных QubDrop! Заработайте 200 000 счёта в игре!');
         return;
     }
     if (qubdropIsOpen) return;

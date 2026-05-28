@@ -1,4 +1,4 @@
-/* style.css - KOLBLOCKS FULL VERSION */
+/* style.css - QUBES FULL VERSION */
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Montserrat+Alternates:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Orbitron:wght@400;700;900&display=swap');
 
@@ -185,7 +185,23 @@ canvas {
     animation: auraPulse 2s ease-in-out infinite;
 }
 
-/* ELITE КЕЙС */
+.spring-chest {
+    background: linear-gradient(135deg, #ff69b4, #ff1493, #ff69b4);
+    border-color: #ff69b4;
+    animation: springPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes springPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 105, 180, 0.5); transform: scale(1); }
+    50% { box-shadow: 0 0 30px rgba(255, 105, 180, 0.8); transform: scale(1.02); }
+}
+
+.spring-chest::after {
+    content: '🌸';
+    border-color: #ff69b4;
+    background: #ff1493;
+}
+
 .elite-chest {
     background: linear-gradient(135deg, #2a0a3a, #4a1a6a, #2a0a3a);
     border-color: #ff44ff;
@@ -755,16 +771,6 @@ button:disabled {
     margin-bottom: 5px;
 }
 
-/* Анимация для калейдоскопа в превью */
-.skin-preview.kaleidoscope-preview {
-    animation: kaleidoscopePulse 2s ease-in-out infinite;
-}
-
-@keyframes kaleidoscopePulse {
-    0%, 100% { box-shadow: 0 0 5px currentColor; }
-    50% { box-shadow: 0 0 20px currentColor; }
-}
-
 .skin-item.equipped .skin-preview {
     border-color: #4af626;
     box-shadow: 0 0 10px #4af626;
@@ -836,7 +842,6 @@ button:disabled {
     }
 }
 
-/* Анимации аур */
 @keyframes auraExpandPlayer {
     0% { transform: scale(0.5) translate(0, 0); opacity: 0.8; }
     100% { transform: scale(1.5) translate(0, 0); opacity: 0; }
@@ -877,10 +882,9 @@ button:disabled {
     100% { transform: scale(0) translateY(-60px); opacity: 0; }
 }
 
-/* Частицы "05" для скина Полгода Колблоксу */
 .skin-particle-05 {
     position: fixed;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     color: #ffaa44;
     pointer-events: none;
@@ -892,7 +896,23 @@ button:disabled {
 
 @keyframes particle05Float {
     0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+    100% { transform: translateY(-80px) scale(0.3); opacity: 0; }
+}
+
+.skin-particle-67 {
+    position: fixed;
+    font-size: 14px;
+    font-weight: bold;
+    color: #4488ff;
+    pointer-events: none;
+    animation: particle67Float 0.8s ease-out forwards;
+    font-family: 'Unbounded', monospace;
+    z-index: 300;
+}
+
+@keyframes particle67Float {
+    0% { transform: translateX(0) scale(1); opacity: 0.8; }
+    100% { transform: translateX(60px) scale(0.5); opacity: 0; }
 }
 
 .player-aura {
@@ -963,34 +983,4 @@ button:disabled {
     pointer-events: none;
     border-radius: 50%;
     z-index: 1;
-}
-
-.aura-key-drop {
-    position: fixed;
-    pointer-events: none;
-    font-size: 24px;
-    animation: keyFloat 1s ease-out forwards;
-    z-index: 200;
-    font-family: 'Unbounded', monospace;
-}
-
-@keyframes keyFloat {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-100px) scale(0.5);
-        opacity: 0;
-    }
-}
-
-/* Анимация качения конуса */
-.cone-rolling {
-    animation: coneRoll 0.3s linear infinite;
-}
-
-@keyframes coneRoll {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Qubes | QubDrop система</title>
+    <title>Qubes | Elite Кейс</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
     </div>
 
     <div id="title">QUBES</div>
-    <div id="eloDisplay">🏆 ОЧКИ: <span id="eloValue">0</span></div>
+    <div id="eloDisplay">🏆 ELO: <span id="eloValue">0</span></div>
 
     <div id="ui">
         <div class="stat"><span class="stat-label">Уровень:</span><span class="stat-value" id="levelDisplay">1</span></div>
@@ -35,7 +35,7 @@
         <p>Комбо максимум: <span id="maxCombo" style="color:#FFDE7D;font-weight:bold">x1</span></p>
         <p>🪙 Собрано монет: <span id="coinsCollected" style="color:#FFDE7D;font-weight:bold">0</span></p>
         <p>💥 Получено урона: <span id="damageTaken" style="color:#ff2e63;font-weight:bold">0</span></p>
-        <p style="margin-top:10px;color:#FFDE7D;font-size:18px">Изменение очков: <span id="eloChangeDisplay" style="font-weight:bold">+0</span></p>
+        <p style="margin-top:10px;color:#FFDE7D;font-size:18px">Изменение ELO: <span id="eloChangeDisplay" style="font-weight:bold">+0</span></p>
         <p style="margin-top:15px;color:#888">Следующий уровень...</p>
     </div>
 
@@ -47,7 +47,7 @@
         <p>Пройдено уровней: <span id="finalLevel">1</span></p>
         <p>Макс. комбо: <span id="finalCombo" style="color:#FFDE7D">x1</span></p>
         <p>Побеждено боссов: <span id="bossesDefeated" style="color:#ff0000">0</span></p>
-        <p style="margin-top:10px;color:#FFDE7D">Финальные очки: <span id="finalElo" style="font-weight:bold;font-size:20px">0</span></p>
+        <p style="margin-top:10px;color:#FFDE7D">Финальный ELO: <span id="finalElo" style="font-weight:bold;font-size:20px">0</span></p>
         <div style="margin-top:10px">
             <button onclick="restartGame()">🔄 ИГРАТЬ СНОВА</button>
             <button class="secondary" onclick="showPauseMenu()">⚙️ НАСТРОЙКИ</button>
@@ -71,49 +71,50 @@
             </div>
             <div class="pause-buttons">
                 <button onclick="togglePause()">▶ ПРОДОЛЖИТЬ</button>
-                <button onclick="openQubDropShop()">🎲 QUBDROP</button>
+                <button onclick="openShop()">🎁 МАГАЗИН КЕЙСОВ</button>
                 <button class="secondary" onclick="restartGame()">🔄 ЗАНОВО</button>
                 <button class="secondary" onclick="location.reload()">🏠 В МЕНЮ</button>
             </div>
         </div>
     </div>
 
-    <!-- Магазин QubDrop (вместо кейсов) -->
-    <div id="qubdropShop">
+    <div id="caseShopScreen">
         <div class="shop-content">
-            <h2>🎲 QUBDROP</h2>
+            <h2>🎁 МАГАЗИН КЕЙСОВ</h2>
             <div class="shop-header">
-                <span class="key-icon">🎁 Доступно: <span id="qubdropCount">0</span></span>
-                <span class="key-icon">🏆 Очки: <span id="totalEloDisplay">0</span></span>
+                <span class="key-icon">🔑 Ключи: <span id="shopKeyCount">0</span></span>
             </div>
             
-            <div class="qubdrop-info">
-                <p>★ 1 QubDrop = 200 000 очков ★</p>
-                <p>↓ Нажми на куб, чтобы открыть ↓</p>
-            </div>
-            
-            <div class="qubdrop-container" id="qubdropContainer">
-                <div class="qubdrop-cube-wrapper" id="qubdropCubeWrapper">
-                    <svg id="qubdropCube" class="qubdrop-cube-shop" viewBox="0 0 40 40" width="120" height="120">
-                        <rect x="0" y="0" width="40" height="40" fill="#FFD700" stroke="#B8860B" stroke-width="2"/>
-                        <rect x="10" y="10" width="8" height="8" fill="#222"/>
-                        <rect x="22" y="10" width="8" height="8" fill="#222"/>
-                        <rect x="10" y="25" width="20" height="4" fill="#222"/>
-                    </svg>
+            <div class="chests-container">
+                <div class="chest-card">
+                    <div id="chestVisual" class="chest normal-chest">📦</div>
+                    <p class="chest-cost">Цена: 10 🔑</p>
+                    <button id="openChestBtn" onclick="openChest()">ОТКРЫТЬ</button>
+                </div>
+                
+                <div class="chest-card">
+                    <div id="auraChestVisual" class="chest aura-chest">✨</div>
+                    <p class="chest-cost">Цена: 12 🔑</p>
+                    <button id="openAuraChestBtn" onclick="openAuraChest()">ОТКРЫТЬ</button>
+                </div>
+
+                <!-- НОВЫЙ ELITE КЕЙС -->
+                <div class="chest-card">
+                    <div id="eliteChestVisual" class="chest elite-chest">💀</div>
+                    <p class="chest-cost">Цена: 15 🔑</p>
+                    <button id="openEliteChestBtn" onclick="openEliteChest()">ОТКРЫТЬ ELITE</button>
                 </div>
             </div>
             
-            <button class="secondary" onclick="closeQubDropShop()" style="margin-top:30px">✖ ЗАКРЫТЬ</button>
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши скины:</h3>
+            <div id="skinsGrid" class="skins-grid"></div>
+            
+            <h3 style="color:#ccc; margin: 25px 0 15px;">Ваши ауры (эффект при ударе):</h3>
+            <div id="aurasGrid" class="skins-grid"></div>
+            
+            <button class="secondary" onclick="closeShop()" style="margin-top:30px">✖ ЗАКРЫТЬ</button>
         </div>
-    </div>
-
-    <!-- Результат QubDrop -->
-    <div id="qubdropResult">
-        <div class="result-card">
-            <div class="result-icon" id="resultIcon">🎁</div>
-            <div class="result-name" id="resultName"></div>
-            <button onclick="closeQubDropResult()" class="back-btn">ПРОДОЛЖИТЬ</button>
-        </div>
+        <div id="chestResult"><h3 id="resultTitle">Предмет получен!</h3><p id="resultText"></p><button onclick="hideResult()">ОК</button></div>
     </div>
 
     <div id="mobileControls">

@@ -1,5 +1,4 @@
-// game.js - Kolblocks с новыми скинами и Elite кейсом
-// ==================== КОНФИГУРАЦИЯ ====================
+// game.js - QUBES FULL VERSION
 const CONFIG = {
     player: { width: 40, height: 40, speed: 6, jumpPower: 16, gravity: 0.8, friction: 0.85, dashSpeed: 20, dashDuration: 12, dashCooldown: 45, maxDashes: 2, doubleJump: true },
     melee: { radius: 95, cooldownMax: 18, damage: 1 },
@@ -13,9 +12,9 @@ const CONFIG = {
     combat: { comboDecay: 180 }
 };
 
-// СКИНЫ (добавлены новые)
+// СКИНЫ
 const CHEST_SKINS = [
-    { id: 'copper', name: 'Медный рыцарь', color: '#B87333', chance: 40 },
+    { id: 'copper', name: 'Колхозный Козёл', color: '#B87333', chance: 40 },
     { id: 'sapphire', name: 'Сапфировый страж', color: '#0f52ba', chance: 25 },
     { id: 'magma', name: 'Магмовый голем', color: '#FF4500', chance: 15 },
     { id: 'royal', name: 'Королевский легион', color: '#FFD700', chance: 10 },
@@ -23,33 +22,46 @@ const CHEST_SKINS = [
     { id: 'halfyear', name: 'Полгода Колблоксу', color: '#ffaa44', chance: 3, particleNumber: '05' },
     { id: 'kaleidoscope', name: 'Калейдоскоп', color: '#ff00ff', chance: 1, kaleidoscope: true },
     { id: 'sixseven', name: 'Сикс Севен', color: '#4488ff', chance: 1, text: '67' },
-    { id: 'cone', name: 'Конус', color: '#ff6600', chance: 1, shape: 'cone', rolling: true }
+    { id: 'cone', name: 'Конус', color: '#00aa44', chance: 1, shape: 'cone' }
 ];
 
+// АУРЫ
 const AURA_SKINS = [
     { id: 'fire_aura', name: 'Огненная аура', color: '#ff4400', effectColor: 'rgba(255, 68, 0, 0.6)', chance: 41 },
     { id: 'ice_aura', name: 'Ледяная аура', color: '#00ccff', effectColor: 'rgba(0, 204, 255, 0.6)', chance: 20 },
-    { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 10 },
-    { id: 'cosmic_aura', name: 'Космическая аура', color: '#9b59b6', effectColor: 'rgba(155, 89, 182, 0.6)', chance: 7 },
+    { id: 'lightning_aura', name: 'Электрическая аура', color: '#ffff00', effectColor: 'rgba(255, 255, 0, 0.6)', chance: 12 },
+    { id: 'cosmic_aura', name: 'Космическая аура', color: '#9b59b6', effectColor: 'rgba(155, 89, 182, 0.6)', chance: 8 },
+    { id: 'cucumber_aura', name: 'Огуречная аура', color: '#7CFC00', effectColor: 'rgba(124, 252, 0, 0.7)', chance: 5, image: 'ogurec.webp' },
     { id: 'batidao_aura', name: 'Но батидао', color: '#ff0000', effectColor: 'rgba(255, 0, 0, 0.8)', chance: 5, image: 'batidao.png' },
-    { id: 'cucumber_aura', name: 'Огуречная аура', color: '#7CFC00', effectColor: 'rgba(124, 252, 0, 0.7)', chance: 4, image: 'ogurec.webp' },
     { id: 'sunflower_aura', name: 'Подсолнечная аура', color: '#FFD700', effectColor: 'rgba(255, 215, 0, 0.6)', chance: 3 },
-    { id: 'cherry_aura', name: 'Вишнёвая аура', color: '#DC143C', effectColor: 'rgba(220, 20, 60, 0.6)', chance: 3 },
-    { id: 'lavender_aura', name: 'Лавандовая аура', color: '#E6E6FA', effectColor: 'rgba(230, 230, 250, 0.5)', chance: 3 },
-    { id: 'rose_aura', name: 'Розовая аура', color: '#FF69B4', effectColor: 'rgba(255, 105, 180, 0.6)', chance: 2 },
-    { id: 'spring_aura', name: 'Весенняя аура', color: '#00FA9A', effectColor: 'rgba(0, 250, 154, 0.6)', chance: 2 },
+    { id: 'cherry_aura', name: 'Вишнёвая аура', color: '#DC143C', effectColor: 'rgba(220, 20, 60, 0.6)', chance: 2 },
+    { id: 'lavender_aura', name: 'Лавандовая аура', color: '#E6E6FA', effectColor: 'rgba(230, 230, 250, 0.5)', chance: 2 },
+    { id: 'rose_aura', name: 'Розовая аура', color: '#FF69B4', effectColor: 'rgba(255, 105, 180, 0.6)', chance: 1 },
+    { id: 'spring_aura', name: 'Весенняя аура', color: '#00FA9A', effectColor: 'rgba(0, 250, 154, 0.6)', chance: 1 },
     { id: 'explosion_aura', name: 'Взрыв Animated', color: '#FF4500', effectColor: 'rgba(255, 69, 0, 0.8)', chance: 1, isGif: true, image: 'vzryv.gif' }
+];
+
+// ВЕСЕННИЙ КЕЙС
+const SPRING_SKINS = [
+    { id: 'cucumber_aura', name: 'Огуречная аура', chance: 20, isAura: true },
+    { id: 'sunflower_aura', name: 'Подсолнечная аура', chance: 15, isAura: true },
+    { id: 'cherry_aura', name: 'Вишнёвая аура', chance: 15, isAura: true },
+    { id: 'lavender_aura', name: 'Лавандовая аура', chance: 15, isAura: true },
+    { id: 'rose_aura', name: 'Розовая аура', chance: 15, isAura: true },
+    { id: 'spring_aura', name: 'Весенняя аура', chance: 10, isAura: true },
+    { id: 'sapphire', name: 'Сапфировый страж', chance: 5, isAura: false, skinId: 'sapphire' },
+    { id: 'copper', name: 'Колхозный Козёл', chance: 5, isAura: false, skinId: 'copper' }
 ];
 
 // ELITE КЕЙС
 const ELITE_SKINS = [
-    { id: 'blackghost', name: 'Чёрный призрак', chance: 25 },
-    { id: 'halfyear', name: 'Полгода Колблоксу', chance: 20 },
-    { id: 'kaleidoscope', name: 'Калейдоскоп', chance: 15 },
-    { id: 'sixseven', name: 'Сикс Севен', chance: 15 },
-    { id: 'cone', name: 'Конус', chance: 10 },
-    { id: 'royal', name: 'Королевский легион', chance: 10 },
-    { id: 'magma', name: 'Магмовый голем', chance: 5 }
+    { id: 'blackghost', name: 'Чёрный призрак', chance: 25, isAura: false, skinId: 'blackghost' },
+    { id: 'halfyear', name: 'Полгода Колблоксу', chance: 20, isAura: false, skinId: 'halfyear' },
+    { id: 'kaleidoscope', name: 'Калейдоскоп', chance: 15, isAura: false, skinId: 'kaleidoscope' },
+    { id: 'sixseven', name: 'Сикс Севен', chance: 15, isAura: false, skinId: 'sixseven' },
+    { id: 'cone', name: 'Конус', chance: 10, isAura: false, skinId: 'cone' },
+    { id: 'royal', name: 'Королевский легион', chance: 10, isAura: false, skinId: 'royal' },
+    { id: 'magma', name: 'Магмовый голем', chance: 5, isAura: false, skinId: 'magma' }
 ];
 
 // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
@@ -85,7 +97,6 @@ const platformTextures = [ {color: '#FF2E63', pattern: 'stripes'}, {color: '#08D
 const enemyColors = ['#FF2E63', '#FFDE7D', '#6A2C70', '#08D9D6', '#AA00FF'];
 const flyingEnemyColors = ['#FF00FF', '#00FFFF', '#FFFF00', '#FF6600'];
 
-// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 function safeTimeout(fn, delay) {
     const id = setTimeout(() => {
         fn();
@@ -112,24 +123,18 @@ function shakeScreen(intensity){screenShake=20;shakeIntensity=intensity;}
 function updateDashIndicator(){const dots=document.querySelectorAll('.dash-dot');dots.forEach((dot,i)=>{dot.classList.toggle('active',i<player.dashCharges);});}
 function showCheckpointIndicator(){const ci=document.getElementById('checkpointIndicator');ci.classList.add('active');safeTimeout(()=>ci.classList.remove('active'),2000);}
 
-// Получение цвета для калейдоскопа
 function getKaleidoscopeColor() {
     const now = new Date();
     const today = now.toDateString();
-    const moscowTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
-    const currentHour = moscowTime.getHours();
-    
     if (lastKaleidoscopeDate !== today) {
         lastKaleidoscopeDate = today;
-        const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-        lastKaleidoscopeColor = randomColor;
-        localStorage.setItem('kolblocks_kaleidoscope_color', randomColor);
+        lastKaleidoscopeColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+        localStorage.setItem('kolblocks_kaleidoscope_color', lastKaleidoscopeColor);
         localStorage.setItem('kolblocks_kaleidoscope_date', today);
     } else if (!lastKaleidoscopeColor) {
         const saved = localStorage.getItem('kolblocks_kaleidoscope_color');
         lastKaleidoscopeColor = saved || '#ff00ff';
     }
-    
     return lastKaleidoscopeColor;
 }
 
@@ -306,27 +311,23 @@ function openChest() {
         let roll = Math.random() * 100;
         let cumulative = 0;
         let drop = null;
-        const availableSkins = CHEST_SKINS.filter(s => !unlockedSkins.includes(s.id) && s.id !== 'default');
-        if (availableSkins.length === 0) {
-            totalKeys += 10;
+        for (let s of CHEST_SKINS) {
+            cumulative += s.chance;
+            if (roll < cumulative) { drop = s; break; }
+        }
+        if (!drop) drop = CHEST_SKINS[0];
+        const has = unlockedSkins.includes(drop.id);
+        if (has) {
+            const refund = 3;
+            totalKeys += refund;
             saveAllData();
             if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🎁 Все скины собраны!', 'Возврат: +10 🔑', '#FFDE7D');
-            if(btn) btn.disabled = false; 
-            renderSkins();
-            return;
+            showResult('🔄 Повторка: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            unlockedSkins.push(drop.id);
+            saveAllData();
+            showResult('✨ Новый скин: ' + drop.name + '!', 'Получен ' + drop.name, drop.color);
         }
-        let totalChance = availableSkins.reduce((s, skin) => s + skin.chance, 0);
-        let rollDrop = Math.random() * totalChance;
-        let cum = 0;
-        for (let s of availableSkins) {
-            cum += s.chance;
-            if (rollDrop < cum) { drop = s; break; }
-        }
-        if (!drop) drop = availableSkins[0];
-        unlockedSkins.push(drop.id);
-        saveAllData();
-        showResult('✨ Новый скин: ' + drop.name + '!', 'Получен ' + drop.name, drop.color);
         if(btn) btn.disabled = false; 
         renderSkins();
     }, 1200);
@@ -343,33 +344,91 @@ function openAuraChest() {
     AudioSys.chestOpen();
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
-        const availableAuras = AURA_SKINS.filter(a => !unlockedAuras.includes(a.id));
-        if (availableAuras.length === 0) {
-            totalKeys += 12;
-            saveAllData();
-            if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🎁 Все ауры собраны!', 'Возврат: +12 🔑', '#FFDE7D');
-            if(btn) btn.disabled = false; 
-            renderAuras();
-            return;
+        let totalChance = 0;
+        for (let a of AURA_SKINS) {
+            totalChance += a.chance;
         }
-        let totalChance = availableAuras.reduce((s, a) => s + a.chance, 0);
         let roll = Math.random() * totalChance;
         let cumulative = 0;
         let drop = null;
-        for (let a of availableAuras) {
+        for (let a of AURA_SKINS) {
             cumulative += a.chance;
             if (roll < cumulative) { drop = a; break; }
         }
-        if (!drop) drop = availableAuras[0];
-        unlockedAuras.push(drop.id);
-        saveAllData();
-        let message = '✨ Новая аура: ' + drop.name + '!';
-        if(drop.id === 'batidao_aura') message = '🔥 НО БАТИДАО! ' + message;
-        if(drop.id === 'cucumber_aura') message = '🥒 ОГУРЕЧНАЯ АУРА! ' + message;
-        if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
-        showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        if (!drop) drop = AURA_SKINS[0];
+        const has = unlockedAuras.includes(drop.id);
+        if (has) {
+            const refund = 4;
+            totalKeys += refund;
+            saveAllData();
+            if(keySpan) keySpan.textContent = totalKeys;
+            showResult('🔄 Повторка ауры: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            unlockedAuras.push(drop.id);
+            saveAllData();
+            let message = '✨ Новая аура: ' + drop.name + '!';
+            if(drop.id === 'batidao_aura') message = '🔥 НО БАТИДАО! ' + message;
+            if(drop.id === 'explosion_aura') message = '💥 ВЗРЫВ ANIMATED! ' + message;
+            showResult(message, 'Теперь при ударе будет эффект!', drop.color);
+        }
         if(btn) btn.disabled = false; 
+        renderAuras();
+    }, 1200);
+}
+
+function openSpringChest() {
+    if (totalKeys < 14) { alert('Нужно минимум 14 🔑 ключей!'); return; }
+    totalKeys -= 14; saveAllData(); 
+    const keySpan = document.getElementById('shopKeyCount');
+    if(keySpan) keySpan.textContent = totalKeys;
+    const btn = document.getElementById('openSpringChestBtn'), chest = document.getElementById('springChestVisual');
+    if(btn) btn.disabled = true; 
+    if(chest) chest.classList.add('shaking'); 
+    AudioSys.chestOpen();
+    safeTimeout(() => {
+        if(chest) chest.classList.remove('shaking');
+        let totalChance = 0;
+        for (let s of SPRING_SKINS) {
+            totalChance += s.chance;
+        }
+        let roll = Math.random() * totalChance;
+        let cumulative = 0;
+        let drop = null;
+        for (let s of SPRING_SKINS) {
+            cumulative += s.chance;
+            if (roll < cumulative) { drop = s; break; }
+        }
+        if (!drop) drop = SPRING_SKINS[0];
+        
+        if (drop.isAura) {
+            const has = unlockedAuras.includes(drop.id);
+            if (has) {
+                const refund = 5;
+                totalKeys += refund;
+                saveAllData();
+                if(keySpan) keySpan.textContent = totalKeys;
+                showResult('🔄 Повторка ауры: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+            } else {
+                unlockedAuras.push(drop.id);
+                saveAllData();
+                showResult('🌸 Новая аура: ' + drop.name + '!', 'Весенняя коллекция!', '#ff69b4');
+            }
+        } else {
+            const has = unlockedSkins.includes(drop.skinId);
+            if (has) {
+                const refund = 5;
+                totalKeys += refund;
+                saveAllData();
+                if(keySpan) keySpan.textContent = totalKeys;
+                showResult('🔄 Повторка скина: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+            } else {
+                unlockedSkins.push(drop.skinId);
+                saveAllData();
+                showResult('🌸 Новый скин: ' + drop.name + '!', 'Весенняя коллекция!', '#ff69b4');
+            }
+        }
+        if(btn) btn.disabled = false; 
+        renderSkins();
         renderAuras();
     }, 1200);
 }
@@ -385,34 +444,37 @@ function openEliteChest() {
     AudioSys.chestOpen();
     safeTimeout(() => {
         if(chest) chest.classList.remove('shaking');
-        const availableSkins = ELITE_SKINS.filter(s => !unlockedSkins.includes(s.id));
-        if (availableSkins.length === 0) {
-            totalKeys += 15;
-            saveAllData();
-            if(keySpan) keySpan.textContent = totalKeys;
-            showResult('🎁 Все Elite скины собраны!', 'Возврат: +15 🔑', '#FF44FF');
-            if(btn) btn.disabled = false; 
-            renderSkins();
-            return;
+        let totalChance = 0;
+        for (let s of ELITE_SKINS) {
+            totalChance += s.chance;
         }
-        let totalChance = availableSkins.reduce((s, skin) => s + skin.chance, 0);
         let roll = Math.random() * totalChance;
         let cumulative = 0;
         let drop = null;
-        for (let s of availableSkins) {
+        for (let s of ELITE_SKINS) {
             cumulative += s.chance;
             if (roll < cumulative) { drop = s; break; }
         }
-        if (!drop) drop = availableSkins[0];
-        unlockedSkins.push(drop.id);
-        saveAllData();
-        let message = '✨ НОВЫЙ ELITE СКИН: ' + drop.name + '! ✨';
-        if(drop.id === 'blackghost') message = '👻 ЧЁРНЫЙ ПРИЗРАК! ' + message;
-        if(drop.id === 'halfyear') message = '🎂 ПОЛГОДА КОЛБЛОКСУ! ' + message;
-        if(drop.id === 'kaleidoscope') message = '🌈 КАЛЕЙДОСКОП! ' + message;
-        if(drop.id === 'sixseven') message = '6️⃣7️⃣ СИКС СЕВЕН! ' + message;
-        if(drop.id === 'cone') message = '🔺 КОНУС! ' + message;
-        showResult(message, 'Редкий скин из Elite кейса!', '#FF44FF');
+        if (!drop) drop = ELITE_SKINS[0];
+        
+        const has = unlockedSkins.includes(drop.skinId);
+        if (has) {
+            const refund = 6;
+            totalKeys += refund;
+            saveAllData();
+            if(keySpan) keySpan.textContent = totalKeys;
+            showResult('🔄 Повторка скина: ' + drop.name, 'Возврат: +' + refund + ' 🔑', '#aaa');
+        } else {
+            unlockedSkins.push(drop.skinId);
+            saveAllData();
+            let message = '💎 ELITE СКИН: ' + drop.name + '! 💎';
+            if(drop.skinId === 'blackghost') message = '👻 ЧЁРНЫЙ ПРИЗРАК! ' + message;
+            if(drop.skinId === 'halfyear') message = '🎂 ПОЛГОДА КОЛБЛОКСУ! ' + message;
+            if(drop.skinId === 'kaleidoscope') message = '🌈 КАЛЕЙДОСКОП! ' + message;
+            if(drop.skinId === 'sixseven') message = '6️⃣7️⃣ СИКС СЕВЕН! ' + message;
+            if(drop.skinId === 'cone') message = '🔺 КОНУС! ' + message;
+            showResult(message, 'Редкий скин из Elite кейса!', '#FF44FF');
+        }
         if(btn) btn.disabled = false; 
         renderSkins();
     }, 1200);
@@ -434,12 +496,10 @@ function loadAuraImages() {
     batidaoImg.onload = () => { batidaoImage = batidaoImg; };
     batidaoImg.onerror = () => { batidaoImage = null; };
     batidaoImg.src = 'batidao.png';
-    
     const cucumberImg = new Image();
     cucumberImg.onload = () => { cucumberImage = cucumberImg; };
     cucumberImg.onerror = () => { cucumberImage = null; };
     cucumberImg.src = 'ogurec.webp';
-    
     const explosionImg = new Image();
     explosionImg.onload = () => { explosionGif = explosionImg; };
     explosionImg.onerror = () => { explosionGif = null; };
@@ -448,7 +508,6 @@ function loadAuraImages() {
 
 function showAuraEffectOnPlayer(x, y, aura) {
     if(activeAuraEffect) { activeAuraEffect.remove(); activeAuraEffect = null; }
-    
     const effect = document.createElement('div');
     effect.className = 'aura-effect player-aura';
     effect.style.position = 'fixed';
@@ -674,8 +733,6 @@ class Player {
         this.dashCharges = CONFIG.player.maxDashes; this.dashCooldown = 0; this.isDashing = false;
         this.dashTimer = 0; this.dashDirection = 1; this.lastCheckpoint = { x: 100, y: 200 };
         this.meleeCooldown = 0; this.swingEffect = 0;
-        this.rollingAngle = 0;
-        this.rollingSpeed = 0;
         return this;
     }
     update(keys) {
@@ -683,16 +740,6 @@ class Player {
         if (this.dashCooldown > 0) this.dashCooldown--;
         if (this.meleeCooldown > 0) this.meleeCooldown--;
         if (this.swingEffect > 0) this.swingEffect--;
-        
-        // Анимация качения для конуса
-        const skinData = getSkinData(equippedSkin);
-        if (skinData.rolling && (Math.abs(this.velX) > 1 || this.isDashing)) {
-            this.rollingSpeed = Math.abs(this.velX) * 0.3 + (this.isDashing ? 8 : 0);
-            this.rollingAngle += this.rollingSpeed;
-        } else {
-            this.rollingSpeed *= 0.95;
-            this.rollingAngle += this.rollingSpeed;
-        }
         
         if (!this.isDashing) { this.trail.push({x: this.x, y: this.y}); if (this.trail.length > this.maxTrail) this.trail.shift(); }
         if (this.isDashing) { this.dashTimer--; this.x += CONFIG.player.dashSpeed * this.dashDirection; if (this.dashTimer <= 0) { this.isDashing = false; this.velY = 0; } return; }
@@ -775,18 +822,32 @@ class Player {
             shakeScreen(3);
         }
         
-        // Создание частиц "05" для скина halfyear
         const skinData = getSkinData(equippedSkin);
+        // Частицы для скина Полгода Колблоксу
         if (skinData.particleNumber && hitSomething) {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 15; i++) {
                 safeTimeout(() => {
                     const particle = document.createElement('div');
                     particle.className = 'skin-particle-05';
                     particle.textContent = skinData.particleNumber;
-                    particle.style.left = (centerX - cameraX - 20 + Math.random() * 40) + 'px';
-                    particle.style.top = (centerY - 20 + Math.random() * 40) + 'px';
+                    particle.style.left = (centerX - cameraX - 30 + Math.random() * 60) + 'px';
+                    particle.style.top = (centerY - 30 + Math.random() * 60) + 'px';
                     document.body.appendChild(particle);
                     safeTimeout(() => particle.remove(), 1000);
+                }, i * 15);
+            }
+        }
+        // Частицы для скина Сикс Севен
+        if (skinData.id === 'sixseven' && hitSomething) {
+            for (let i = 0; i < 12; i++) {
+                safeTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'skin-particle-67';
+                    particle.textContent = '67';
+                    particle.style.left = (centerX - cameraX + (Math.random() - 0.5) * 100) + 'px';
+                    particle.style.top = (centerY + (Math.random() - 0.5) * 80) + 'px';
+                    document.body.appendChild(particle);
+                    safeTimeout(() => particle.remove(), 800);
                 }, i * 20);
             }
         }
@@ -822,97 +883,83 @@ class Player {
     saveCheckpoint() { this.lastCheckpoint = { x: this.x, y: this.y }; showCheckpointIndicator(); AudioSys.checkpoint(); }
     
     drawShape(ctx, x, y, w, h, skin) {
-        // Чёрный призрак - тёмно-серые грани при получении урона или использовании ауры
         let useDarkEdges = false;
         if (skin.id === 'blackghost') {
             useDarkEdges = (this.invulnerable > 0 || this.swingEffect > 0 || equippedAura !== null);
         }
         
         const mainColor = skin.color;
-        const edgeColor = useDarkEdges ? '#444444' : '#888888';
+        const edgeColor = useDarkEdges ? '#444444' : mainColor;
         
+        // Конус (треугольник без вращения)
         if (skin.shape === 'cone') {
-            // Рисование конуса (треугольника)
-            ctx.save();
-            ctx.translate(x + w/2, y + h/2);
-            ctx.rotate(this.rollingAngle * Math.PI / 180);
             ctx.beginPath();
-            ctx.moveTo(0, -h/2);
-            ctx.lineTo(-w/2, h/2);
-            ctx.lineTo(w/2, h/2);
+            ctx.moveTo(x + w/2, y);
+            ctx.lineTo(x + w, y + h);
+            ctx.lineTo(x, y + h);
             ctx.closePath();
             ctx.fillStyle = mainColor;
             ctx.fill();
-            ctx.strokeStyle = edgeColor;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.restore();
-            
-            // Глаза для конуса
             ctx.fillStyle = '#222';
-            ctx.fillRect(x + 10, y + 10, 8, 8);
-            ctx.fillRect(x + 22, y + 10, 8, 8);
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(x + 12, y + 12, 3, 3);
-            ctx.fillRect(x + 24, y + 12, 3, 3);
-            ctx.fillStyle = '#222';
-            ctx.fillRect(x + 10, y + 25, 20, 4);
+            ctx.fillRect(x + w/2 - 4, y + 10, 8, 8);
+            ctx.fillRect(x + w/2 - 4, y + 22, 8, 8);
+            ctx.fillRect(x + w/2 - 10, y + 35, 20, 4);
             return;
         }
         
+        // Сикс Севен (цифра 67 на весь скин)
         if (skin.text === '67') {
             ctx.fillStyle = mainColor;
             ctx.fillRect(x, y, w, h);
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 28px monospace';
+            ctx.font = 'bold 32px monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('67', x + w/2, y + h/2);
             ctx.fillStyle = '#222';
-            ctx.fillRect(x + 10, y + 10, 8, 8);
-            ctx.fillRect(x + 22, y + 10, 8, 8);
-            ctx.fillRect(x + 10, y + 25, 20, 4);
+            ctx.fillRect(x + w/2 - 12, y + 8, 6, 6);
+            ctx.fillRect(x + w/2 + 6, y + 8, 6, 6);
+            ctx.fillRect(x + w/2 - 10, y + 28, 20, 3);
             return;
         }
         
+        // Полгода Колблоксу (с надписью)
         if (skin.id === 'halfyear') {
             ctx.fillStyle = mainColor;
             ctx.fillRect(x, y, w, h);
             ctx.fillStyle = '#222';
+            ctx.fillRect(x + 10, y + 10, 6, 6);
+            ctx.fillRect(x + 24, y + 10, 6, 6);
+            ctx.fillStyle = '#222';
+            ctx.fillRect(x + 10, y + 28, 20, 3);
+            ctx.fillStyle = '#222';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('нам полгода', x + w/2, y + 22);
+            return;
+        }
+        
+        // Обычный квадрат (без серых контуров)
+        ctx.fillStyle = mainColor;
+        ctx.fillRect(x, y, w, h);
+        
+        // Глаза и рот (без зрачков, кроме чёрного призрака)
+        if (skin.id === 'blackghost') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x + 10, y + 10, 8, 8);
+            ctx.fillRect(x + 22, y + 10, 8, 8);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x + 12, y + 12, 4, 4);
+            ctx.fillRect(x + 24, y + 12, 4, 4);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x + 10, y + 25, 20, 4);
+        } else {
+            ctx.fillStyle = '#222';
             ctx.fillRect(x + 10, y + 10, 8, 8);
             ctx.fillRect(x + 22, y + 10, 8, 8);
             ctx.fillStyle = '#222';
             ctx.fillRect(x + 10, y + 25, 20, 4);
-            ctx.fillStyle = '#222';
-            ctx.font = 'bold 10px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText('нам полгода', x + w/2, y + 20);
-            return;
         }
-        
-        // Обычный квадрат
-        ctx.fillStyle = mainColor;
-        ctx.fillRect(x, y, w, h);
-        if (useDarkEdges && skin.id === 'blackghost') {
-            ctx.fillStyle = '#444444';
-            ctx.fillRect(x, y, w, 4);
-            ctx.fillRect(x, y + h - 4, w, 4);
-            ctx.fillRect(x, y, 4, h);
-            ctx.fillRect(x + w - 4, y, 4, h);
-        } else {
-            ctx.fillStyle = edgeColor;
-            ctx.fillRect(x, y, w, 2);
-            ctx.fillRect(x, y + h - 2, w, 2);
-            ctx.fillRect(x, y, 2, h);
-            ctx.fillRect(x + w - 2, y, 2, h);
-        }
-        ctx.fillStyle = '#222';
-        ctx.fillRect(x + 10, y + 10, 8, 8);
-        ctx.fillRect(x + 22, y + 10, 8, 8);
-        ctx.fillRect(x + 10, y + 25, 20, 4);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(x + 12, y + 12, 3, 3);
-        ctx.fillRect(x + 24, y + 12, 3, 3);
     }
     
     draw(ctx, cameraX) {
@@ -1637,6 +1684,8 @@ async function initGame(){
     updateDashIndicator();
     updateEloDisplay();
     setupMobileControls();
+    renderSkins();
+    renderAuras();
     safeTimeout(() => { gameRunning = true; gameLoop(); }, 800);
 }
 
